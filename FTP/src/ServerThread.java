@@ -296,6 +296,14 @@ public class ServerThread implements Runnable {
     	}
     	   this.out.flush();
     }
+	 
+	 /**
+	  * Notify client that get/putting of the certain file has ceased and should be removed
+	  * @param filename
+	  */
+	 private void notifyClient(String filename){
+		 this.out.println(filename);
+	 }
 	
     /**
      * Changes the current working directory to the directory specified
