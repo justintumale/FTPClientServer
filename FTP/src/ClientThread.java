@@ -190,6 +190,9 @@ public class ClientThread extends Thread {
 		else if (tokens[0].equals("terminate")){
 			this.sendTerminate();
 		}
+		else if(tokens[0].equals("quit")){
+			return;
+		}
 		else{
 			this.sendElse();
 		}
@@ -245,6 +248,7 @@ public class ClientThread extends Thread {
 	    //Send the command to the server
 	    out.println(this.cmd);
 	    out.flush();
+	    this.receiveElse();
 	}
 	
 	private void sendTerminate() throws IOException{
