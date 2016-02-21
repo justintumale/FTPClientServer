@@ -44,8 +44,8 @@ public class Server {
 					this.BACKLOG
 			);
 			//create listeners that handle logic from each port
-			this.listenerN = new ServerListener(this.nPort, this.serverSocketN, threadPool);
-			this.listenerT = new ServerListener(this.tPort, this.serverSocketT, threadPool);
+			this.listenerN = new ServerListener(this.nPort, this.serverSocketN, threadPool, commandIds);
+			this.listenerT = new ServerListener(this.tPort, this.serverSocketT, threadPool, commandIds);
 			
 			//run listeners
 			this.listenerN.start();

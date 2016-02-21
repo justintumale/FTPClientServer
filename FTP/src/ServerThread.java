@@ -76,7 +76,6 @@ public class ServerThread implements Runnable {
 			this.br.close();
 		} 
 		catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		finally{
@@ -88,7 +87,9 @@ public class ServerThread implements Runnable {
 			}
 			//remove the command Id from table if we finished a get or put command
 			if(this.commandId != null){
-				this.commandIds.remove(this.commandId);
+				synchronized (this.commandIds){
+					this.commandIds.remove(this.commandId);
+				}
 			}
 		}
 		
@@ -123,11 +124,33 @@ public class ServerThread implements Runnable {
 					return this.put(tokens[1]);
 				case "cd":
 					return this.cd(tokens[1]);
+				case "terminate":
+					return this.terminate(tokens[1]);
 			}	
 		}
 		return "Command not supported.";
 	}
 
+    private String terminate(String commandId){
+    	Boolean b;
+    	synchronized (this.commandIds){
+    		b = this.commandIds.get(commandId);
+    	}
+    	if (b == null){
+    		return "Command ID not found";
+    	}
+    	else if(b.booleanValue() == true){
+    		this.commandIds.put(commandId, new Boolean(false));
+    		return "Terminating command Id: " + commandId;
+    	}
+    	else if (b.booleanValue() == false){
+    		return "Command id is terminating or already terminated";
+    	}
+    	return "Error in terminate command ";
+		
+    	
+    }
+    
 	/**
      * method of file transfer
      * @param name of file to remote machine from local machine
@@ -135,6 +158,7 @@ public class ServerThread implements Runnable {
      * */
 	private String put(String fileName) {
 		//add cmd Id to hashtable
+		
 		this.commandId = Integer.toString(this.hashCode());
 		this.commandIds.put(this.commandId, new Boolean(true));
 		
@@ -177,10 +201,12 @@ public class ServerThread implements Runnable {
 	 * @return success or failure message of the file transfer
 	 * */
 	private String get(String fileName) {
-		//add cmd Id to hashtable
-		this.commandId = Integer.toString(this.hashCode());
-		this.commandIds.put(this.commandId, new Boolean(true));
 		
+		synchronized (this.commandIds){
+			//add cmd Id to hashtable
+			this.commandId = Integer.toString(this.hashCode());
+			this.commandIds.put(this.commandId, new Boolean(true));
+		}
 		//send client the command ID
 		this.out.println(
 			this.commandId
@@ -225,7 +251,10 @@ public class ServerThread implements Runnable {
 	    		//check terminate flag every 1000 bytes
 	    		checkLimit += count;
 	    		if(checkLimit >= 1000){
-	    			boolean keepActive = this.commandIds.get(this.commandId);
+	    			boolean keepActive;
+	    			synchronized (this.commandIds){
+	    				keepActive = this.commandIds.get(this.commandId).booleanValue();
+	    			}
 	    			if (!keepActive){
 	    				//delete file and break
 	    				fileInputStream.close();
