@@ -134,33 +134,36 @@ public class ServerThread implements Runnable {
     private String terminate(String commandId){
     	Boolean b;
     	synchronized (this.commandIds){
-    		b = this.commandIds.get(commandId);
+	    		b = this.commandIds.get(commandId);
+	    	
+	    	if (b == null){
+	    		return "Command ID not found";
+	    	}
+	    	else if(b.booleanValue() == true){
+	    		this.commandIds.put(commandId, new Boolean(false));
+	    		return "Terminating command Id: " + commandId;
+	    	}
+	    	else if (b.booleanValue() == false){
+	    		return "Command id is terminating or already terminated";
+	    	}
+	    	return "Error in terminate command ";
     	}
-    	if (b == null){
-    		return "Command ID not found";
-    	}
-    	else if(b.booleanValue() == true){
-    		this.commandIds.put(commandId, new Boolean(false));
-    		return "Terminating command Id: " + commandId;
-    	}
-    	else if (b.booleanValue() == false){
-    		return "Command id is terminating or already terminated";
-    	}
-    	return "Error in terminate command ";
-		
     	
     }
     
+    
+    //TODO add flag check to this method
 	/**
      * method of file transfer
      * @param name of file to remote machine from local machine
      * @return success or failure message
      * */
 	private String put(String fileName) {
-		//add cmd Id to hashtable
-		
-		this.commandId = Integer.toString(this.hashCode());
-		this.commandIds.put(this.commandId, new Boolean(true));
+		synchronized (this.commandIds){
+			//add cmd Id to hashtable
+			this.commandId = Integer.toString(this.hashCode());
+			this.commandIds.put(this.commandId, new Boolean(true));
+		}
 		
 		//send client the command ID
 		this.out.println(
