@@ -8,17 +8,20 @@ public class Server {
 
 	private ExecutorService threadPool = Executors.newCachedThreadPool();
 	private final int BACKLOG = 20;
-	private int port;
+	private int nPort, tPort;
 	private String address = "localhost";
-	private ServerSocket serverSocket = null;
+	private ServerSocket serverSocketN = null;
+	private ServerSocket serverSocketT = null;
 	
-	public Server(String address, int port){
+	public Server(String address, int nPort, int tPort){
 		this.address = address;
-		this.port = port;
+		this.nPort = nPort;
+		this.tPort = tPort;
 	}
 	
-	public Server(int port){
-		this.port = port;
+	public Server(int nPort, int tPort){
+		this.nPort = nPort;
+		this.tPort = tPort;
 	}
 	
 	public void run(){
@@ -26,13 +29,19 @@ public class Server {
 		//create a socket
 		try {
 			
-			this.serverSocket = new ServerSocket(
-					this.port,
+			this.serverSocketN = new ServerSocket(
+					this.nPort,
 					this.BACKLOG
 			);
-			
+			this.serverSocketT = new ServerSocket(
+					this.tPort,
+					this.BACKLOG
+			);
+						
 			do{
-				Socket clientSocket = this.serverSocket.accept();
+				//need to find a way to have two listening ports at same time
+				//idea: create a thread for both that listen
+				Socket clientSocket = this.serverSocketN.accept();
 				ServerThread serverThread = new ServerThread(clientSocket, this.serverSocket);
 				this.threadPool.execute(serverThread);
 			}while(true);

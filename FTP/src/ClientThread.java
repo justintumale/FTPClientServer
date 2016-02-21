@@ -27,7 +27,7 @@ import java.nio.file.FileSystemException;
  */
 public class ClientThread extends Thread {
 	
-	private Socket socket;
+	private Socket socketN, socketT;
 	private String cmd;
     private InputStream in;
     private BufferedReader br;
@@ -39,9 +39,10 @@ public class ClientThread extends Thread {
 	 * @param socket
 	 * @param cmd
 	 */
-	public ClientThread(Socket socket, String cmd){
+	public ClientThread(Socket socketN,Socket socketT, String cmd){
 		super();
-		this.socket = socket;
+		this.socketN = socketN;
+		this.socketT = socketT;
 		this.cmd = cmd;
 		try{
 		    this.in = socket.getInputStream();
@@ -58,8 +59,10 @@ public class ClientThread extends Thread {
 	 */
 	@Override
 	public void run(){
+		
 		try {
-			this.send();
+			//this.send();
+			this.parse();
 			this.receive();
 		}
 		catch(FileNotFoundException fnfe){
@@ -93,7 +96,7 @@ public class ClientThread extends Thread {
 		    out.flush();	
 		    
 		    //stream the file next
-			readBytesAndOutputToStream(fileName);			
+			this.readBytesAndOutputToStream(fileName);			
 		}
 		//sending string to server
 		else{
@@ -104,6 +107,67 @@ public class ClientThread extends Thread {
 		    out.println(this.cmd);
 		    out.flush();	
 		}
+	}
+	
+	private void receiveGet(){
+		//read in a line it will tell you command ID
+		//read in another line, it will tell you if file exists or not
+		//if file exists read it, otherwise end thread
+		
+		
+		//read in file once server sends it
+		//return it or print
+	}
+	private void receiveElse() throws IOException{
+			this.printResponse();
+		
+	}
+	
+	private void receivePut(){
+		//read in a line it will tell you command ID
+		//read in another line saying if writing was successful or not
+		
+	}
+	
+	private void receiveTerminate(){
+		//expect 1 line (string) print it out
+	}
+	
+	private void parse() throws IOException{
+		if (this.cmd.equals("get")){
+			this.sendGet();
+		}
+		else if (this.cmd.equals("put")){
+			
+		}
+		else if (this.cmd.equals("termiante")){
+			this.sendTerminate();
+		}
+		else{
+			this.sendElse();
+		}
+	}
+	private void sendGet(){
+		//send command on Nsocket
+		this.receiveGet();
+	}
+	private void sendPut(){
+		//check if file exists
+		//if it doesnt, return error, let thread die
+		//else send command to nSocket
+		// then send the actual file
+	}
+	
+	private void sendElse(){
+		//send command
+	}
+	
+	private void sendTerminate() throws IOException{
+		//send command to Tsocket
+		 PrintWriter out = null;
+		  out = new PrintWriter(this.socketT.getOutputStream());
+		  //send command
+		this.receiveTerminate();
 	}
 	
 	/**
