@@ -1,4 +1,5 @@
 
+import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.io.IOException;
@@ -12,6 +13,9 @@ public class Server {
 	private String address = "localhost";
 	private ServerSocket serverSocketN = null;
 	private ServerSocket serverSocketT = null;
+	private ServerListener listenerT = null;
+	private ServerListener listenerN = null;
+	private HashMap<String, Boolean> commandIds;
 	
 	public Server(String address, int nPort, int tPort){
 		this.address = address;
@@ -26,9 +30,11 @@ public class Server {
 	
 	public void run(){
 		System.out.println("Server is running");
+		this.commandIds = new HashMap<>();
+		
 		//create a socket
 		try {
-			
+			//create two sockets listening at terminate and normal ports
 			this.serverSocketN = new ServerSocket(
 					this.nPort,
 					this.BACKLOG
@@ -37,14 +43,17 @@ public class Server {
 					this.tPort,
 					this.BACKLOG
 			);
-						
-			do{
-				//need to find a way to have two listening ports at same time
-				//idea: create a thread for both that listen
-				Socket clientSocket = this.serverSocketN.accept();
-				ServerThread serverThread = new ServerThread(clientSocket, this.serverSocket);
-				this.threadPool.execute(serverThread);
-			}while(true);
+			//create listeners that handle logic from each port
+			this.listenerN = new ServerListener(this.nPort, this.serverSocketN, threadPool);
+			this.listenerT = new ServerListener(this.tPort, this.serverSocketT, threadPool);
+			
+			//run listeners
+			this.listenerN.start();
+			this.listenerT.start();
+			
+			//keep Server running till both listeners die.
+			this.listenerN.join();
+			this.listenerT.join();
 					
 		} 
 		
@@ -54,15 +63,27 @@ public class Server {
 		catch(IllegalArgumentException iae){
 			iae.printStackTrace();
 		}
+		catch(InterruptedException ie){
+			ie.printStackTrace();
+		}
 		finally{
-			// have check here that other threads aren't running
-			if (this.serverSocket != null)
+			//close sockets
+			if (this.serverSocketN != null){
 				try {
-					this.serverSocket.close();
+					this.serverSocketN.close();
 				} 
 				catch (IOException e) {
 					System.out.println("Error closing server socket.");
 				}
+			}
+			if (this.serverSocketT != null){
+				try {
+					this.serverSocketT.close();
+				} 
+				catch (IOException e) {
+					System.out.println("Error closing server socket.");
+				}
+			}
 		}
 		
 	}

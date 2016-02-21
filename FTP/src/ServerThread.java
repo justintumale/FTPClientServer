@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.HashMap;
 /**
  * Implements Runnable to override the inherited run method
  */
@@ -27,10 +28,13 @@ public class ServerThread implements Runnable {
 	private File currentWorkingDir;
 	private PrintWriter out;
 	private BufferedReader br;
+	private HashMap<String, Boolean> commandIds;
+	private String commandId = null;
 	
-	public ServerThread(Socket clientSocket, ServerSocket serverSocket){
+	public ServerThread(Socket clientSocket, ServerSocket serverSocket, HashMap<String, Boolean> commandIds){
 		this.clientSocket = clientSocket;
 		this.currentWorkingDir = new File(System.getProperty("user.dir"));
+		this.commandIds = commandIds;
 		//out is the message buffer to return to the client
 		try {
 			this.out = new PrintWriter(clientSocket.getOutputStream(), true);
@@ -82,6 +86,10 @@ public class ServerThread implements Runnable {
 			} catch (IOException e) {
 				System.out.println("Error closing client socket");
 			}
+			//remove the command Id from table if we finished a get or put command
+			if(this.commandId != null){
+				this.commandIds.remove(this.commandId);
+			}
 		}
 		
 	}
@@ -126,6 +134,15 @@ public class ServerThread implements Runnable {
      * @return success or failure message
      * */
 	private String put(String fileName) {
+		//add cmd Id to hashtable
+		this.commandId = Integer.toString(this.hashCode());
+		this.commandIds.put(this.commandId, new Boolean(true));
+		
+		//send client the command ID
+		this.out.println(
+			this.commandId
+		);
+		
 	    InputStream in = null;
 		try {
 			in = this.clientSocket.getInputStream();
@@ -160,6 +177,14 @@ public class ServerThread implements Runnable {
 	 * @return success or failure message of the file transfer
 	 * */
 	private String get(String fileName) {
+		//add cmd Id to hashtable
+		this.commandId = Integer.toString(this.hashCode());
+		this.commandIds.put(this.commandId, new Boolean(true));
+		
+		//send client the command ID
+		this.out.println(
+			this.commandId
+		);
 	    File f = null;
 	    try{
 	    	f = new File(this.currentWorkingDir, fileName);
@@ -193,10 +218,21 @@ public class ServerThread implements Runnable {
 		    //create a byte array
 	    	byte[] bytes = new byte[(int) f.length()];	    	
 		
-	    	int count;
+	    	int count, checkLimit = 0;
 		    //write the bytes to the output stream
 	    	while ((count = fileInputStream.read(bytes)) > 0){
 	    		out.write(bytes, 0, count);
+	    		//check terminate flag every 1000 bytes
+	    		checkLimit += count;
+	    		if(checkLimit >= 1000){
+	    			boolean keepActive = this.commandIds.get(this.commandId);
+	    			if (!keepActive){
+	    				//delete file and break
+	    				fileInputStream.close();
+	    				return "Get command terminated early";
+	    			}
+	    			checkLimit = 0;
+	    		}
 	    	}
 		    
 	    	fileInputStream.close();
