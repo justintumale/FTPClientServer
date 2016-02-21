@@ -261,6 +261,7 @@ public class ServerThread implements Runnable {
 	    			if (!keepActive){
 	    				//delete file and break
 	    				fileInputStream.close();
+	    				//create notifyClient and send it the filename
 	    				return "Get command terminated early";
 	    			}
 	    			checkLimit = 0;
