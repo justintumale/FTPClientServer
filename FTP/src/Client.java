@@ -17,22 +17,26 @@ import java.util.concurrent.Executors;
 public class Client {
 	
 	private Socket clientSocket = null;
+	private Socket clientSocketTerminate = null;
 	private Scanner scanner = new Scanner(System.in);
 	private PrintStream output = null;
-	private int connectPort;
+	private int normalPort;
+	private int terminatePort;
 	private String hostName = null;
 	/**
 	 * @params port number
 	 * */
-	public Client(int port){
-		this.connectPort = port;
+	public Client(int portN, int portT){
+		this.normalPort = portN;
+		this.terminatePort = portT;
 		this.hostName = "localhost";
 	}
 	/**
 	 * @params hostname, port number
 	 * */
-	public Client(String hostName, int port){
-		this.connectPort = port;
+	public Client(String hostName, int portN, int portT){
+		this.normalPort = portN;
+		this.terminatePort = portT;
 		this.hostName = hostName;
 	}
 	/**
@@ -44,8 +48,8 @@ public class Client {
 	 * */
 	public void run() throws UnknownHostException, IOException, InterruptedException{
 		//create socket
-		this.clientSocket = new Socket(this.hostName, this.connectPort);
-		
+		this.clientSocket = new Socket(this.hostName, this.normalPort);
+		this.clientSocketTerminate = new Socket(this.hostName, this.terminatePort);
 		
 		//read commands from sys.in
 		String input = null;
@@ -53,7 +57,7 @@ public class Client {
 			System.out.print("ftpclient> ");	
 			input = this.scanner.nextLine();
 		
-			ClientThread clientThread = new ClientThread(this.clientSocket, input);
+			ClientThread clientThread = new ClientThread(this.clientSocket, this.clientSocketTerminate, input);
 			clientThread.start();
 
 			try{
@@ -76,7 +80,7 @@ public class Client {
 	public static void main(String[] args){
 		boolean DEVELOPMENT = false;
 		if(DEVELOPMENT){
-			Client client = new Client("localhost", 60000);
+			Client client = new Client("localhost", 60000, 59999);
 			System.out.println("Running client!");
 			try {
 				client.run();
@@ -101,7 +105,7 @@ public class Client {
 		
 			try{
 				if(args.length == 2 && Integer.valueOf(args[1]) <= 65535){
-					Client client = new Client(args[0], Integer.valueOf(args[1]));
+					Client client = new Client(args[0], Integer.valueOf(args[1]), Integer.valueOf(args[2]));
 					System.out.println("Running client!");
 					client.run();
 					System.out.println("Client shutdown!");

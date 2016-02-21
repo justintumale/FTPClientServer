@@ -31,6 +31,7 @@ public class ClientThread extends Thread {
 	private String cmd;
     private InputStream in;
     private BufferedReader br;
+    private BufferedReader brTerminate;
     
 	/**
 	 * Creates new ClientThread with param socket and cmd 
@@ -45,8 +46,9 @@ public class ClientThread extends Thread {
 		this.socketT = socketT;
 		this.cmd = cmd;
 		try{
-		    this.in = socket.getInputStream();
-		    this.br = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+		    this.in = socketN.getInputStream();
+		    this.br = new BufferedReader(new InputStreamReader(this.socketN.getInputStream()));
+		    this.brTerminate = new BufferedReader(new InputStreamReader(this.socketT.getInputStream()));
 		}
 		catch(Exception e){
 		    e.printStackTrace();   
@@ -57,13 +59,14 @@ public class ClientThread extends Thread {
 	 * overridden method run to send and receive signals and catches exceptions with reading files and 
 	 * handling sockets
 	 */
+	//TODO first.
 	@Override
 	public void run(){
 		
 		try {
 			//this.send();
 			this.parse();
-			this.receive();
+			//this.receive();
 		}
 		catch(FileNotFoundException fnfe){
 			fnfe.printStackTrace();
@@ -91,7 +94,7 @@ public class ClientThread extends Thread {
 			String fileName = tokens[1];
 			
 			//send command the server first
-		    PrintWriter out = new PrintWriter(this.socket.getOutputStream());
+		    PrintWriter out = new PrintWriter(this.socketN.getOutputStream());
 		    out.println(this.cmd);
 		    out.flush();	
 		    
@@ -102,17 +105,37 @@ public class ClientThread extends Thread {
 		else{
 		    //Get the output stream to the server
 		    PrintWriter out = null;
-		    out = new PrintWriter(this.socket.getOutputStream());
+		    out = new PrintWriter(this.socketN.getOutputStream());
 		    //Send the command to the server
 		    out.println(this.cmd);
 		    out.flush();	
 		}
 	}
 	
-	private void receiveGet(){
+	private void receiveGet() throws IOException{
 		//read in a line it will tell you command ID
+		StringBuffer response = new StringBuffer();
+		String inputCommandId = null;
+		inputCommandId = this.br.readLine();
+		response.append(inputCommandId);
+		
 		//read in another line, it will tell you if file exists or not
 		//if file exists read it, otherwise end thread
+		String[] tokens = this.cmd.split(" ");
+		String fileName = tokens[1];
+	    boolean acceptFile = this.checkServerResponse();
+	    if(acceptFile){
+		    //If the file exists then we need to write to file.
+		    byte[] bytes = new byte[16*1024];
+		    
+		    this.in.read(bytes);
+		    
+		    //CreateFile
+		    FileOutputStream fos = new FileOutputStream(fileName);
+		    fos.write(bytes);
+		    fos.close();
+	    }
+		
 		
 		
 		//read in file once server sends it
@@ -123,22 +146,33 @@ public class ClientThread extends Thread {
 		
 	}
 	
-	private void receivePut(){
+	private void receivePut() throws IOException{
 		//read in a line it will tell you command ID
+		String input = null;
+		input = this.br.readLine();
+		System.out.println("Put- command id: " + input);
 		//read in another line saying if writing was successful or not
+		input = this.br.readLine();
+		System.out.println("Message from the server: " + input);
+		
 		
 	}
 	
-	private void receiveTerminate(){
+	private void receiveTerminate() throws IOException{
 		//expect 1 line (string) print it out
+		String input = null;
+		input = this.brTerminate.readLine();
+		System.out.println("Message from the server:" + input);
 	}
 	
+	//TODO second part.
 	private void parse() throws IOException{
 		if (this.cmd.equals("get")){
 			this.sendGet();
 		}
 		else if (this.cmd.equals("put")){
-			
+			this.sendPut();
+		
 		}
 		else if (this.cmd.equals("terminate")){
 			this.sendTerminate();
@@ -147,19 +181,51 @@ public class ClientThread extends Thread {
 			this.sendElse();
 		}
 	}
-	private void sendGet(){
+	
+	
+	private void sendGet() throws IOException{
 		//send command on Nsocket
+		
+	    PrintWriter out = null;
+	    out = new PrintWriter(this.socketN.getOutputStream());
+	    //Send the command to the server
+	    out.println(this.cmd);
+	    out.flush();	
+		
+		
 		this.receiveGet();
 	}
-	private void sendPut(){
+	private void sendPut() throws IOException{
+		String[] tokens = this.cmd.split(" ");
+		String fileName = tokens[1];
 		//check if file exists
 		//if it doesnt, return error, let thread die
-		//else send command to nSocket
+		File file = new File(fileName);
+		if (!file.exists()){
+		    throw new FileNotFoundException();
+		}
+		if (file.length() > Long.MAX_VALUE){
+			throw new FileSystemException("File size too large");
+		}
+		
+		//else send command to nSocket		
+		//send command the server first
+	    PrintWriter out = new PrintWriter(this.socketN.getOutputStream());
+	    out.println(this.cmd);
+	    out.flush();	
+	    
+	    //stream the file next
+		this.readBytesAndOutputToStream(fileName);	
 		// then send the actual file
 	}
 	
-	private void sendElse(){
+	private void sendElse() throws IOException{
 		//send command
+		PrintWriter out = null;
+	    out = new PrintWriter(this.socketN.getOutputStream());
+	    //Send the command to the server
+	    out.println(this.cmd);
+	    out.flush();
 	}
 	
 	private void sendTerminate() throws IOException{
@@ -237,7 +303,7 @@ public class ClientThread extends Thread {
 		}
 		
 		//get the output stream
-		OutputStream out = this.socket.getOutputStream();
+		OutputStream out = this.socketN.getOutputStream();
 
 		//create an input stream for the file
 		FileInputStream fileInputStream = new FileInputStream(file);
