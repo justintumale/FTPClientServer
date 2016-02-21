@@ -104,7 +104,7 @@ public class Client {
 		else{
 		
 			try{
-				if(args.length == 2 && Integer.valueOf(args[1]) <= 65535){
+				if(args.length == 3 && Integer.valueOf(args[1]) <= 65535 && Integer.valueOf(args[2]) <= 65535){
 					Client client = new Client(args[0], Integer.valueOf(args[1]), Integer.valueOf(args[2]));
 					System.out.println("Running client!");
 					client.run();
@@ -121,8 +121,8 @@ public class Client {
 				System.out.println("Count not find host");
 			}
 			catch(NumberFormatException nfe){
-				System.out.println("Client must be run with this syntax: java Client hostname port_number" + 
-						"\n e.g. java Client localhost 60000");
+				System.out.println("Client must be run with this syntax: java Client hostname nport tport" + 
+						"\n e.g. java Client localhost 60000 60001");
 			}
 			catch(Exception ex){
 				ex.printStackTrace();

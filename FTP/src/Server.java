@@ -91,15 +91,15 @@ public class Server {
 	
 	public static void main(String[] args){
 		
-		boolean DEVELOPMENT = false;
+		boolean DEVELOPMENT = true;
 		if (DEVELOPMENT){
-			Server myFtpServer = new Server("localhost", 60000);
+			Server myFtpServer = new Server("localhost", 60000, 60001);
 			myFtpServer.run();
 		}
 		else{
 			try{
-				if(args.length == 1 && Integer.valueOf(args[0]) >= 49152 && Integer.valueOf(args[0]) <= 65535){
-					Server myFtpServer = new Server("localhost", Integer.valueOf(args[0]));
+				if(args.length == 2 && Integer.valueOf(args[0]) >= 49152 && Integer.valueOf(args[0]) <= 65535  && Integer.valueOf(args[1]) <= 65535){
+					Server myFtpServer = new Server("localhost", Integer.valueOf(args[0]), Integer.valueOf(args[1]));
 					myFtpServer.run();
 				}
 				else{
@@ -107,7 +107,7 @@ public class Server {
 				}
 			}
 			catch(NumberFormatException nfe){
-				System.out.println("Server must be run with this syntax: java Server [port number (49152 - 65535) ]");
+				System.out.println("Server must be run with this syntax: java Server [nport number (49152 - 65535) ] [tport number (49152 - 65535) ]");
 			}
 		}
 		
