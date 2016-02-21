@@ -123,6 +123,7 @@ public class ClientThread extends Thread {
 		//read in another line, it will tell you if file exists or not
 		//if file exists read it, otherwise end thread
 		String[] tokens = this.cmd.split(" ");
+		//TODO cant assume that there is a tokens[1]
 		String fileName = tokens[1];
 	    boolean acceptFile = this.checkServerResponse();
 	    if(acceptFile){

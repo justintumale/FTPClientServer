@@ -18,6 +18,7 @@ CLASSPATH = -cp FTP/src/
 CLASSES = \
         $(SRC_DIR)ServerThread.java \
 	$(SRC_DIR)ClientThread.java \
+        $(SRC_DIR)ServerListener.java \
 	$(SRC_DIR)Server.java \
 	$(SRC_DIR)Client.java
 

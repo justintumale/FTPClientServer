@@ -204,9 +204,9 @@ public class ServerThread implements Runnable {
 	 * @return success or failure message of the file transfer
 	 * */
 	private String get(String fileName) {
-		
 		synchronized (this.commandIds){
 			//add cmd Id to hashtable
+			//TODO use matt's hashcode function
 			this.commandId = Integer.toString(this.hashCode());
 			this.commandIds.put(this.commandId, new Boolean(true));
 		}
