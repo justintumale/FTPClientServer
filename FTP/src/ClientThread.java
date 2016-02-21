@@ -140,7 +140,7 @@ public class ClientThread extends Thread {
 		else if (this.cmd.equals("put")){
 			
 		}
-		else if (this.cmd.equals("termiante")){
+		else if (this.cmd.equals("terminate")){
 			this.sendTerminate();
 		}
 		else{
