@@ -114,10 +114,11 @@ public class ClientThread extends Thread {
 	
 	private void receiveGet() throws IOException{
 		//read in a line it will tell you command ID
-		StringBuffer response = new StringBuffer();
+		StringBuffer commandId = new StringBuffer();
 		String inputCommandId = null;
 		inputCommandId = this.br.readLine();
-		response.append(inputCommandId);
+		commandId.append(inputCommandId);
+		System.out.println(commandId.toString());
 		
 		//read in another line, it will tell you if file exists or not
 		//if file exists read it, otherwise end thread
@@ -135,9 +136,21 @@ public class ClientThread extends Thread {
 		    fos.write(bytes);
 		    fos.close();
 	    }
-		
-		
-		
+	    //read line after wards. it wil either say file successfuy downloaded or it will be a filename to delete
+	  String response = this.br.readLine();
+	    if (!response.equals("File does not exist") || !response.equals("This is a directory, you can only move files.") || 
+	    		!response.equals("Error reading file") || !response.equals("Download succesful.")){
+	    	
+			File file = new File(response);
+			if (file.exists()){
+				file.delete();
+				System.out.println("File deleted");
+			}		
+	    }
+	    else{
+	    	System.out.println(response);
+	    }
+	
 		//read in file once server sends it
 		//return it or print
 	}
@@ -148,9 +161,8 @@ public class ClientThread extends Thread {
 	
 	private void receivePut() throws IOException{
 		//read in a line it will tell you command ID
-		String input = null;
-		input = this.br.readLine();
-		System.out.println("Put- command id: " + input);
+				String input = null;
+			
 		//read in another line saying if writing was successful or not
 		input = this.br.readLine();
 		System.out.println("Message from the server: " + input);
@@ -167,14 +179,15 @@ public class ClientThread extends Thread {
 	
 	//TODO second part.
 	private void parse() throws IOException{
-		if (this.cmd.equals("get")){
+		String[] tokens = this.cmd.split(" ");	
+		if (tokens[0].equals("get")){
 			this.sendGet();
 		}
-		else if (this.cmd.equals("put")){
+		else if (tokens[0].equals("put")){
 			this.sendPut();
 		
 		}
-		else if (this.cmd.equals("terminate")){
+		else if (tokens[0].equals("terminate")){
 			this.sendTerminate();
 		}
 		else{
@@ -185,14 +198,13 @@ public class ClientThread extends Thread {
 	
 	private void sendGet() throws IOException{
 		//send command on Nsocket
-		
 	    PrintWriter out = null;
 	    out = new PrintWriter(this.socketN.getOutputStream());
+	    
 	    //Send the command to the server
 	    out.println(this.cmd);
 	    out.flush();	
-		
-		
+	
 		this.receiveGet();
 	}
 	private void sendPut() throws IOException{
@@ -214,9 +226,16 @@ public class ClientThread extends Thread {
 	    out.println(this.cmd);
 	    out.flush();	
 	    
+	  //read in a line it will tell you command ID
+	  		String input = null;
+	  		input = this.br.readLine();
+	  		System.out.println("Put- command id: " + input);
+	    
 	    //stream the file next
 		this.readBytesAndOutputToStream(fileName);	
 		// then send the actual file
+		
+		this.receivePut();
 	}
 	
 	private void sendElse() throws IOException{
