@@ -256,6 +256,8 @@ public class ClientThread extends Thread {
 		//send command to Tsocket
 		 PrintWriter out = null;
 		  out = new PrintWriter(this.socketT.getOutputStream());
+		  out.println(this.cmd);
+		  out.flush();
 		  //send command
 		this.receiveTerminate();
 	}
