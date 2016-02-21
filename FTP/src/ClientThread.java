@@ -114,10 +114,11 @@ public class ClientThread extends Thread {
 	
 	private void receiveGet() throws IOException{
 		//read in a line it will tell you command ID
-		StringBuffer response = new StringBuffer();
+		StringBuffer commandId = new StringBuffer();
 		String inputCommandId = null;
 		inputCommandId = this.br.readLine();
-		response.append(inputCommandId);
+		commandId.append(inputCommandId);
+		System.out.println(commandId.toString());
 		
 		//read in another line, it will tell you if file exists or not
 		//if file exists read it, otherwise end thread
@@ -135,9 +136,21 @@ public class ClientThread extends Thread {
 		    fos.write(bytes);
 		    fos.close();
 	    }
-		
-		
-		
+	    //read line after wards. it wil either say file successfuy downloaded or it will be a filename to delete
+	  String response = this.br.readLine();
+	    if (!response.equals("File does not exist") || !response.equals("This is a directory, you can only move files.") || 
+	    		!response.equals("Error reading file") || !response.equals("Download succesful.")){
+	    	
+			File file = new File(response);
+			if (file.exists()){
+				file.delete();
+				System.out.println("File deleted");
+			}		
+	    }
+	    else{
+	    	System.out.println(response);
+	    }
+	
 		//read in file once server sends it
 		//return it or print
 	}
