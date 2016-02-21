@@ -148,9 +148,8 @@ public class ClientThread extends Thread {
 	
 	private void receivePut() throws IOException{
 		//read in a line it will tell you command ID
-		String input = null;
-		input = this.br.readLine();
-		System.out.println("Put- command id: " + input);
+				String input = null;
+			
 		//read in another line saying if writing was successful or not
 		input = this.br.readLine();
 		System.out.println("Message from the server: " + input);
@@ -167,14 +166,15 @@ public class ClientThread extends Thread {
 	
 	//TODO second part.
 	private void parse() throws IOException{
-		if (this.cmd.equals("get")){
+		String[] tokens = this.cmd.split(" ");	
+		if (tokens[0].equals("get")){
 			this.sendGet();
 		}
-		else if (this.cmd.equals("put")){
+		else if (tokens[0].equals("put")){
 			this.sendPut();
 		
 		}
-		else if (this.cmd.equals("terminate")){
+		else if (tokens[0].equals("terminate")){
 			this.sendTerminate();
 		}
 		else{
@@ -185,14 +185,13 @@ public class ClientThread extends Thread {
 	
 	private void sendGet() throws IOException{
 		//send command on Nsocket
-		
 	    PrintWriter out = null;
 	    out = new PrintWriter(this.socketN.getOutputStream());
+	    
 	    //Send the command to the server
 	    out.println(this.cmd);
 	    out.flush();	
-		
-		
+	
 		this.receiveGet();
 	}
 	private void sendPut() throws IOException{
@@ -214,9 +213,16 @@ public class ClientThread extends Thread {
 	    out.println(this.cmd);
 	    out.flush();	
 	    
+	  //read in a line it will tell you command ID
+	  		String input = null;
+	  		input = this.br.readLine();
+	  		System.out.println("Put- command id: " + input);
+	    
 	    //stream the file next
 		this.readBytesAndOutputToStream(fileName);	
 		// then send the actual file
+		
+		this.receivePut();
 	}
 	
 	private void sendElse() throws IOException{
