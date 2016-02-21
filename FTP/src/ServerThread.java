@@ -131,6 +131,16 @@ public class ServerThread implements Runnable {
 		return "Command not supported.";
 	}
 
+	private int generateHash(){
+		//max 6 digit number
+		int max = 999999;
+		//min 6 digit number
+		int min = 100000;
+		//adds min to random generated number to ensure 6 digits
+		int hash = (int) Math.round(Math.random() * (max - min + 1) + min);	
+		return hash;	
+	}
+
     private String terminate(String commandId){
     	Boolean b;
     	synchronized (this.commandIds){
