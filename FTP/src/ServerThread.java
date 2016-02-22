@@ -131,16 +131,6 @@ public class ServerThread implements Runnable {
 		return "Command not supported.";
 	}
 
-	private int generateHash(){
-		//max 6 digit number
-		int max = 999999;
-		//min 6 digit number
-		int min = 100000;
-		//adds min to random generated number to ensure 6 digits
-		int hash = (int) Math.round(Math.random() * (max - min + 1) + min);	
-		return hash;	
-	}
-
     private String terminate(String commandId){
     	Boolean b;
     	synchronized (this.commandIds){
@@ -171,7 +161,7 @@ public class ServerThread implements Runnable {
 	private String put(String fileName) {
 		synchronized (this.commandIds){
 			//add cmd Id to hashtable
-			this.commandId = Integer.toString(this.hashCode());
+			this.commandId = this.generateId();
 			this.commandIds.put(this.commandId, new Boolean(true));
 		}
 		
@@ -217,7 +207,7 @@ public class ServerThread implements Runnable {
 		synchronized (this.commandIds){
 			//add cmd Id to hashtable
 			//TODO use matt's hashcode function
-			this.commandId = Integer.toString(this.hashCode());
+			this.commandId = this.generateId();
 			this.commandIds.put(this.commandId, new Boolean(true));
 		}
 		//send client the command ID
@@ -381,5 +371,18 @@ public class ServerThread implements Runnable {
 			}
 		}
 		return "File not deleted. File does not exist!";	
+	}
+	
+	private String generateId(){
+		//max 6 digit number
+		int max = 999999;
+		//min 6 digit number
+		int min = 100000;
+		//adds min to random generated number to ensure 6 digits
+		String id = Integer.toString( (int) Math.round(Math.random() * (max - min + 1) + min));
+		 
+		//return the hash or if it already exists in commandId table recompute
+		return (this.commandIds.get(id) != null) ? generateId() : id;	
+		
 	}
 }
