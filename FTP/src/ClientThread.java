@@ -116,45 +116,50 @@ public class ClientThread extends Thread {
 	
 	private void receiveGet() throws IOException{
 		//read in a line it will tell you command ID
-		String inputCommandId = inputCommandId = this.br.readLine();
+		String inputCommandId = this.br.readLine();
 		System.out.println(inputCommandId);
 		
 		//read in another line, it will tell you if file exists or not
 		//if file exists read it, otherwise end thread
 		String[] tokens = this.cmd.split(" ");
-		//TODO cant assume that there is a tokens[1]
-		String fileName = tokens[1];
-	    boolean acceptFile = this.checkServerResponse();
-	    int count = -1;
-	    if(acceptFile){
-		    //If the file exists then we need to write to file.
-		byte[] buffer = new byte[16*1024];
-		FileOutputStream fos = new FileOutputStream(fileName);
-		while((count = this.in.read(buffer)) > 0){
-    		    //CreateFile
-		    fos.write(buffer, 0, count);
+		if (tokens.length!=2){
+			System.out.println("Please enter the get command in the proper format: get <filename>");
 		}
-		fos.flush();
-		fos.close();
-	    }
-	    //read line after wards. it wil either say file successfuy downloaded or it will be a filename to delete
-	  String response = this.br.readLine();
-
-	    if (!response.equals("File does not exist") || !response.equals("This is a directory, you can only move files.") || 
-	    		!response.equals("Error reading file") || !response.equals("Download successful.")){
-	    	
-			File file = new File(response);
-			if (file.exists()){
-				file.delete();
-				System.out.println("File deleted");
-			}		
-	    }
-	    else{
-	    	System.out.println(response);
-	    }
-	
-		//read in file once server sends it
-		//return it or print
+		else{
+				//TODO cant assume that there is a tokens[1]
+				String fileName = tokens[1];
+			    boolean acceptFile = this.checkServerResponse();
+			    int count = -1;
+			    if(acceptFile){
+				    //If the file exists then we need to write to file.
+				byte[] buffer = new byte[16*1024];
+				FileOutputStream fos = new FileOutputStream(fileName);
+				while((count = this.in.read(buffer)) > 0){
+		    		    //CreateFile
+				    fos.write(buffer, 0, count);
+				}
+				fos.flush();
+				fos.close();
+			    }
+			    //read line after wards. it wil either say file successfuy downloaded or it will be a filename to delete
+			  String response = this.br.readLine();
+		
+			    if (!response.equals("File does not exist") || !response.equals("This is a directory, you can only move files.") || 
+			    		!response.equals("Error reading file") || !response.equals("Download successful.")){
+			    	
+					File file = new File(response);
+					if (file.exists()){
+						file.delete();
+						System.out.println("File deleted");
+					}		
+			    }
+			    else{
+			    	System.out.println(response);
+			    }
+			
+				//read in file once server sends it
+				//return it or print
+		}
 	}
 	private void receiveElse() throws IOException{
 			this.printResponse();
@@ -214,33 +219,38 @@ public class ClientThread extends Thread {
 	}
 	private void sendPut() throws IOException{
 		String[] tokens = this.cmd.split(" ");
-		String fileName = tokens[1];
-		//check if file exists
-		//if it doesnt, return error, let thread die
-		File file = new File(fileName);
-		if (!file.exists()){
-		    throw new FileNotFoundException();
+		if (tokens.length != 2){
+			System.out.println("Please enter the get command in the proper format: put <filename>");
 		}
-		if (file.length() > Long.MAX_VALUE){
-			throw new FileSystemException("File size too large");
+		else{
+			String fileName = tokens[1];
+			//check if file exists
+			//if it doesnt, return error, let thread die
+			File file = new File(fileName);
+			if (!file.exists()){
+			    throw new FileNotFoundException();
+			}
+			if (file.length() > Long.MAX_VALUE){
+				throw new FileSystemException("File size too large");
+			}
+			
+			//else send command to nSocket		
+			//send command the server first
+		    PrintWriter out = new PrintWriter(this.socketN.getOutputStream());
+		    out.println(this.cmd);
+		    out.flush();	
+		    
+		  //read in a line it will tell you command ID
+		  		String input = null;
+		  		input = this.br.readLine();
+		  		System.out.println("Put- command id: " + input);
+		    
+		    //stream the file next
+			this.readBytesAndOutputToStream(fileName);	
+			// then send the actual file
+			
+			this.receivePut();
 		}
-		
-		//else send command to nSocket		
-		//send command the server first
-	    PrintWriter out = new PrintWriter(this.socketN.getOutputStream());
-	    out.println(this.cmd);
-	    out.flush();	
-	    
-	  //read in a line it will tell you command ID
-	  		String input = null;
-	  		input = this.br.readLine();
-	  		System.out.println("Put- command id: " + input);
-	    
-	    //stream the file next
-		this.readBytesAndOutputToStream(fileName);	
-		// then send the actual file
-		
-		this.receivePut();
 	}
 	
 	private void sendElse() throws IOException{
