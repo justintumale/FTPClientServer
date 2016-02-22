@@ -32,6 +32,7 @@ public class ClientThread extends Thread {
     private InputStream in;
     private BufferedReader br;
     private BufferedReader brTerminate;
+    private PrintWriter out;
     
 	/**
 	 * Creates new ClientThread with param socket and cmd 
@@ -49,6 +50,7 @@ public class ClientThread extends Thread {
 		    this.in = socketN.getInputStream();
 		    this.br = new BufferedReader(new InputStreamReader(this.socketN.getInputStream()));
 		    this.brTerminate = new BufferedReader(new InputStreamReader(this.socketT.getInputStream()));
+		    this.out = new PrintWriter(this.socketN.getOutputStream());
 		}
 		catch(Exception e){
 		    e.printStackTrace();   
@@ -94,7 +96,7 @@ public class ClientThread extends Thread {
 			String fileName = tokens[1];
 			
 			//send command the server first
-		    PrintWriter out = new PrintWriter(this.socketN.getOutputStream());
+		    
 		    out.println(this.cmd);
 		    out.flush();	
 		    
@@ -136,8 +138,9 @@ public class ClientThread extends Thread {
 	    }
 	    //read line after wards. it wil either say file successfuy downloaded or it will be a filename to delete
 	  String response = this.br.readLine();
+
 	    if (!response.equals("File does not exist") || !response.equals("This is a directory, you can only move files.") || 
-	    		!response.equals("Error reading file") || !response.equals("Download succesful.")){
+	    		!response.equals("Error reading file") || !response.equals("Download successful.")){
 	    	
 			File file = new File(response);
 			if (file.exists()){
