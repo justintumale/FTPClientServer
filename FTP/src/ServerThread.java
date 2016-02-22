@@ -261,6 +261,7 @@ public class ServerThread implements Runnable {
 	    			if (!keepActive){
 	    				//delete file and break
 	    				fileInputStream.close();
+	    				out.flush();
 	    				//create notifyClient and send it the filename
 	    				return fileName;
 	    			}
@@ -270,6 +271,7 @@ public class ServerThread implements Runnable {
 		    
 	    	fileInputStream.close();
 	    	out.flush();  
+	    	return "Download successful.";
 		
 	    }
 	    
@@ -277,8 +279,6 @@ public class ServerThread implements Runnable {
 		    this.notifyClient(false);
 		    return "Error reading file";
 	    }
-	    
-	   return "Download successful."; 
 	}
     
 /**Notify client whether or not the file exists.
