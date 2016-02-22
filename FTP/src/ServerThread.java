@@ -246,13 +246,14 @@ public class ServerThread implements Runnable {
 	    	//create an input stream for the file
 	    	FileInputStream fileInputStream = new FileInputStream(f);
 		    //create a byte array
-	    	byte[] bytes = new byte[(int) f.length()];	    	
+	    	byte[] buffer = new byte[16*1024];//(int) f.length()];	    	
 		//System.out.println(f.length());
 	    	int count, checkLimit = 0;
 		    //write the bytes to the output stream
-	    	while ((count = fileInputStream.read(bytes)) > 0){
-	    		out.write(bytes, 0, count);
+	    	while ((count = fileInputStream.read(buffer)) > 0){
+	    		out.write(buffer, 0, count);
 	    		//check terminate flag every 1000 bytes
+			System.out.println(count);
 	    		checkLimit += count;
 	    		if(checkLimit >= 1000){
 	    			boolean keepActive;

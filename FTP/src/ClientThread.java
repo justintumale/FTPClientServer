@@ -125,16 +125,17 @@ public class ClientThread extends Thread {
 		//TODO cant assume that there is a tokens[1]
 		String fileName = tokens[1];
 	    boolean acceptFile = this.checkServerResponse();
+	    int count = -1;
 	    if(acceptFile){
 		    //If the file exists then we need to write to file.
-		byte[] bytes = new byte[16*1024];
-		    
-		    this.in.read(bytes);
-		    
-		    //CreateFile
-		    FileOutputStream fos = new FileOutputStream(fileName);
-		    fos.write(bytes);
-		    fos.close();
+		byte[] buffer = new byte[16*1024];
+		FileOutputStream fos = new FileOutputStream(fileName);
+		while((count = this.in.read(buffer)) > 0){
+    		    //CreateFile
+		    fos.write(buffer, 0, count);
+		}
+		fos.flush();
+		fos.close();
 	    }
 	    //read line after wards. it wil either say file successfuy downloaded or it will be a filename to delete
 	  String response = this.br.readLine();
