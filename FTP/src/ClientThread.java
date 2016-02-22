@@ -123,7 +123,7 @@ public class ClientThread extends Thread {
 		//if file exists read it, otherwise end thread
 		String[] tokens = this.cmd.split(" ");
 		if (tokens.length!=2){
-			System.out.println("Please enter the get command in the proper format: get <filename>");
+			System.out.println("Please enter the command in the proper format: get <filename>");
 		}
 		else{
 				//TODO cant assume that there is a tokens[1]
@@ -220,7 +220,7 @@ public class ClientThread extends Thread {
 	private void sendPut() throws IOException{
 		String[] tokens = this.cmd.split(" ");
 		if (tokens.length != 2){
-			System.out.println("Please enter the get command in the proper format: put <filename>");
+			System.out.println("Please enter the command in the proper format: put <filename>");
 		}
 		else{
 			String fileName = tokens[1];
