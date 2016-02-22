@@ -125,7 +125,7 @@ public class ClientThread extends Thread {
 	    boolean acceptFile = this.checkServerResponse();
 	    if(acceptFile){
 		    //If the file exists then we need to write to file.
-		    byte[] bytes = new byte[16*1024];
+		byte[] bytes = new byte[16*1024];
 		    
 		    this.in.read(bytes);
 		    

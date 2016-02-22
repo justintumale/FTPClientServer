@@ -41,8 +41,10 @@ public class ServerThread implements Runnable {
 			//br is the incoming message buffer from the client to be read by the server
 			this.br = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
 		} catch (IOException e) {
+		    e.printStackTrace();
 			System.out.println("Error connecting to socket.");
 		}
+
 		
 		
 	}
@@ -245,7 +247,7 @@ public class ServerThread implements Runnable {
 	    	FileInputStream fileInputStream = new FileInputStream(f);
 		    //create a byte array
 	    	byte[] bytes = new byte[(int) f.length()];	    	
-		
+		//System.out.println(f.length());
 	    	int count, checkLimit = 0;
 		    //write the bytes to the output stream
 	    	while ((count = fileInputStream.read(bytes)) > 0){

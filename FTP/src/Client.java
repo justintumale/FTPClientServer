@@ -80,7 +80,7 @@ public class Client {
 	public static void main(String[] args){
 		boolean DEVELOPMENT = true;
 		if(DEVELOPMENT){
-			Client client = new Client("localhost", 60000, 60001);
+			Client client = new Client("localhost", 60002, 60003);
 			System.out.println("Running client!");
 			try {
 				client.run();
