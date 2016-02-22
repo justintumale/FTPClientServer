@@ -80,8 +80,8 @@ public class ServerThread implements Runnable {
 		}
 		finally{
 			try {
-				//close client conn.
-				this.clientSocket.close();
+			    //close client conn.
+			    this.clientSocket.close();
 			} catch (IOException e) {
 				System.out.println("Error closing client socket");
 			}
@@ -206,7 +206,6 @@ public class ServerThread implements Runnable {
 	private String get(String fileName) {
 		synchronized (this.commandIds){
 			//add cmd Id to hashtable
-			//TODO use matt's hashcode function
 			this.commandId = this.generateId();
 			this.commandIds.put(this.commandId, new Boolean(true));
 		}
@@ -382,7 +381,11 @@ public class ServerThread implements Runnable {
 		String id = Integer.toString( (int) Math.round(Math.random() * (max - min + 1) + min));
 		 
 		//return the hash or if it already exists in commandId table recompute
-		return (this.commandIds.get(id) != null) ? generateId() : id;	
+		synchronized (this.commandIds){
+		    id = (this.commandIds.get(id) != null) ? generateId() : id;	
+		}
+		return id;
+		//return (this.commandIds.get(id) != null) ? generateId() : id;	
 		
 	}
 }

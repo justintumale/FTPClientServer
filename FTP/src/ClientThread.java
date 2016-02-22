@@ -114,11 +114,8 @@ public class ClientThread extends Thread {
 	
 	private void receiveGet() throws IOException{
 		//read in a line it will tell you command ID
-		StringBuffer commandId = new StringBuffer();
-		String inputCommandId = null;
-		inputCommandId = this.br.readLine();
-		commandId.append(inputCommandId);
-		System.out.println(commandId.toString());
+		String inputCommandId = inputCommandId = this.br.readLine();
+		System.out.println(inputCommandId);
 		
 		//read in another line, it will tell you if file exists or not
 		//if file exists read it, otherwise end thread

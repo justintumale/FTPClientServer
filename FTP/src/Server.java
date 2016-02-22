@@ -1,4 +1,3 @@
-
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -15,7 +14,7 @@ public class Server {
 	private ServerSocket serverSocketT = null;
 	private ServerListener listenerT = null;
 	private ServerListener listenerN = null;
-	private HashMap<String, Boolean> commandIds;
+	private volatile HashMap<String, Boolean> commandIds;
 	
 	public Server(String address, int nPort, int tPort){
 		this.address = address;
