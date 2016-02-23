@@ -19,6 +19,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.FileSystemException;
 import java.util.Arrays;
+import java.util.HashMap;
+
 
 
 /**
@@ -35,6 +37,11 @@ public class ClientThread extends Thread {
     private BufferedReader brTerminate;
     private PrintWriter out;
     private final byte[] VALID = new byte[]{1,1,1}, INVALID = new byte[]{0,0,0};
+    private volatile HashMap<String, ClientThread> commandIds;
+    private String commandId = null;
+    private ClientThread self = null;
+    private Object lock1 = new Object();
+    private Object lock2 = new Object();
     
 	/**
 	 * Creates new ClientThread with param socket and cmd 
@@ -43,11 +50,12 @@ public class ClientThread extends Thread {
 	 * @param socket
 	 * @param cmd
 	 */
-	public ClientThread(Socket socketN,Socket socketT, String cmd){
+	public ClientThread(Socket socketN,Socket socketT, String cmd, HashMap<String, ClientThread> commandIds){
 		super();
 		this.socketN = socketN;
 		this.socketT = socketT;
 		this.cmd = cmd;
+		this.commandIds = commandIds;
 		try{
 		    this.in = socketN.getInputStream();
 		    this.br = new BufferedReader(new InputStreamReader(this.socketN.getInputStream()));
@@ -68,10 +76,14 @@ public class ClientThread extends Thread {
 	public void run(){
 		
 		try {
+			Thread.sleep(0);
 			System.out.println(this.cmd);
 			//this.send();
 			this.parse();
 			//this.receive();
+		}
+		catch(InterruptedException e){
+			System.out.println("Interrupted!");
 		}
 		catch(FileNotFoundException fnfe){
 			fnfe.printStackTrace();
@@ -84,6 +96,27 @@ public class ClientThread extends Thread {
 			System.out.println("Error reading file or socket");
 		}
 
+
+	}
+	
+	private void parse() throws IOException{
+		String[] tokens = this.cmd.split(" ");	
+		if (tokens[0].equals("get")){
+			this.sendGet();
+		}
+		else if (tokens[0].equals("put")){
+			this.sendPut();
+		
+		}
+		else if (tokens[0].equals("terminate")){
+			this.sendTerminate();
+		}
+		else if(tokens[0].equals("quit")){
+			return;
+		}
+		else{
+			this.sendElse();
+		}
 	}
 	
 	/**
@@ -117,10 +150,66 @@ public class ClientThread extends Thread {
 		}
 	}
 	
+	/**
+	 * Receives signals and checks the command to tokenize them
+	 * @throws IOException
+	 */
+	private void receive() throws IOException{
+	    String[] tokens = this.cmd.split(" ");
+	    String cmd = tokens[0];
+	     	
+    	if (tokens.length > 1 && cmd.equals("get")){
+    		 String fileName = tokens[1];
+    		//case 1, client issued a get file command and server is currently returning file. 
+	    
+		    //first check to make sure there was no error in getting file
+		    //check server's response. 
+		    boolean acceptFile = this.checkServerResponse();
+		    if(acceptFile){
+			    //If the file exists then we need to write to file.
+			    byte[] bytes = new byte[16*1024];
+			    
+			    this.in.read(bytes);
+			    
+			    //CreateFile
+			    FileOutputStream fos = new FileOutputStream(fileName);
+			    fos.write(bytes);
+			    fos.close();
+		    }
+    	}
+    	//print response is called no matter what
+	    printResponse();
+	}//receive
+	
+	
+	private void sendGet() throws IOException{
+		//send command on Nsocket
+	    PrintWriter out = null;
+	    out = new PrintWriter(this.socketN.getOutputStream());
+	    
+	    //Send the command to the server
+	    out.println(this.cmd);
+	    out.flush();	
+	    
+	    /*
+	     * 			
+		    //Get the command ID
+			this.commandId = this.generateId();
+			//Put id / Thread into hashmap
+			this.commandIds.put(this.commandId, this );
+	     */
+
+	
+		this.receiveGet();
+	}
+	
 	private void receiveGet() throws IOException{
 		//read in a line it will tell you command ID
 		String inputCommandId = this.br.readLine();
 		System.out.println(inputCommandId);
+		
+		//put the command ID into the hashmap
+		this.hashGet(inputCommandId, this );
 		
 		//read in another line, it will tell you if file exists or not
 		//if file exists read it, otherwise end thread
@@ -180,68 +269,16 @@ public class ClientThread extends Thread {
 			    }*/
 		}
 	}
-	private void receiveElse() throws IOException{
-			this.printResponse();
-		
-	}
-	
-	private void receivePut() throws IOException{
-		//read in a line it will tell you command ID
-				String input = null;
-			
-		//read in another line saying if writing was successful or not
-		input = this.br.readLine();
-		System.out.println("Message from the server: " + input);
-		
-		
-	}
-	
-	private void receiveTerminate() throws IOException{
-		//expect 1 line (string) print it out
-		String input = null;
-		input = this.brTerminate.readLine();
-		System.out.println("Message from the server:" + input);
-	}
-	
-	//TODO second part.
-	private void parse() throws IOException{
-		String[] tokens = this.cmd.split(" ");	
-		if (tokens[0].equals("get")){
-			this.sendGet();
-		}
-		else if (tokens[0].equals("put")){
-			this.sendPut();
-		
-		}
-		else if (tokens[0].equals("terminate")){
-			this.sendTerminate();
-		}
-		else if(tokens[0].equals("quit")){
-			return;
-		}
-		else{
-			this.sendElse();
-		}
-	}
 	
 	
-	private void sendGet() throws IOException{
-		//send command on Nsocket
-	    PrintWriter out = null;
-	    out = new PrintWriter(this.socketN.getOutputStream());
-	    
-	    //Send the command to the server
-	    out.println(this.cmd);
-	    out.flush();	
-	
-		this.receiveGet();
-	}
 	private void sendPut() throws IOException{
 		String[] tokens = this.cmd.split(" ");
 		if (tokens.length != 2){
 			System.out.println("Please enter the command in the proper format: put <filename>");
 		}
 		else{
+			
+			
 			String fileName = tokens[1];
 			//check if file exists
 			//if it doesnt, return error, let thread die
@@ -252,6 +289,7 @@ public class ClientThread extends Thread {
 			if (file.length() > Long.MAX_VALUE){
 				throw new FileSystemException("File size too large");
 			}
+
 			
 			//else send command to nSocket		
 			//send command the server first
@@ -259,10 +297,13 @@ public class ClientThread extends Thread {
 		    out.println(this.cmd);
 		    out.flush();	
 		    
-		  //read in a line it will tell you command ID
-		  		String input = null;
-		  		input = this.br.readLine();
-		  		System.out.println("Put- command id: " + input);
+		    //read in a line it will tell you command ID
+	  		String input = null;
+	  		input = this.br.readLine();
+	  		System.out.println("Put- command id: " + input);
+	  		
+			//Put id / Thread into hashmap
+		    this.hashPut(input, this);
 		    
 		    //stream the file next
 			this.readBytesAndOutputToStream(fileName);	
@@ -270,6 +311,15 @@ public class ClientThread extends Thread {
 			
 			this.receivePut();
 		}
+	}
+	
+	private void receivePut() throws IOException{
+		//read in a line it will tell you command ID
+				String input = null;
+			
+		//read in another line saying if writing was successful or not
+		input = this.br.readLine();
+		System.out.println("Message from the server: " + input);	
 	}
 	
 	private void sendElse() throws IOException{
@@ -282,47 +332,53 @@ public class ClientThread extends Thread {
 	    this.receiveElse();
 	}
 	
-	private void sendTerminate() throws IOException{
-		//send command to Tsocket
-		 PrintWriter out = null;
-		  out = new PrintWriter(this.socketT.getOutputStream());
-		  out.println(this.cmd);
-		  out.flush();
-		  //send command
-		this.receiveTerminate();
+	private void receiveElse() throws IOException{
+			this.printResponse();
+		
 	}
 	
-	/**
-	 * Receives signals and checks the command to tokenize them
-	 * @throws IOException
-	 */
-	private void receive() throws IOException{
+	private void sendTerminate() throws IOException{
 	    String[] tokens = this.cmd.split(" ");
-	    String cmd = tokens[0];
-	     	
-    	if (tokens.length > 1 && cmd.equals("get")){
-    		 String fileName = tokens[1];
-    		//case 1, client issued a get file command and server is currently returning file. 
-	    
-		    //first check to make sure there was no error in getting file
-		    //check server's response. 
-		    boolean acceptFile = this.checkServerResponse();
-		    if(acceptFile){
-			    //If the file exists then we need to write to file.
-			    byte[] bytes = new byte[16*1024];
-			    
-			    this.in.read(bytes);
-			    
-			    //CreateFile
-			    FileOutputStream fos = new FileOutputStream(fileName);
-			    fos.write(bytes);
-			    fos.close();
-		    }
-    	}
-    	//print response is called no matter what
-	    printResponse();
-	}//receive
+	    if (tokens.length != 2){
+	    	System.out.println("Please enter the command in the proper format: terminate <command ID>");
+	    }
+	    else{
+			//send command to Tsocket
+			  PrintWriter out = null;
+			  out = new PrintWriter(this.socketT.getOutputStream());
+			  out.println(this.cmd);
+			  out.flush();
+			  //interrupt thread
+			  System.out.println("terminate id:" + tokens[1]);
+			  ClientThread t = this.commandIds.get(tokens[1]);
+			  t.interrupt();
+			  
+			  //send command
+			  this.receiveTerminate();
+	    }
+	}
 	
+	private void receiveTerminate() throws IOException{
+		//expect 1 line (string) print it out
+		String input = null;
+		input = this.brTerminate.readLine();
+		System.out.println("Message from the server:" + input);
+	}
+	
+
+	
+	private void hashPut(String id, ClientThread thread){
+		synchronized(lock1){
+			this.commandIds.put(id, thread);
+		}
+	}
+	
+	private void hashGet(String id, ClientThread thread){
+		synchronized(lock2){
+			this.commandIds.put(id, thread);
+		}
+	}
+		
 	/**
 	 * Checks the server response and throws IOException
 	 * 
@@ -416,6 +472,21 @@ public class ClientThread extends Thread {
 		while (((input = this.br.readLine()) != null) && !input.equals("")){
 				System.out.println(input);
 		}
-	}	
+	}
+	
+	private String generateId(){
+		//max 6 digit number
+		int max = 999999;
+		//min 6 digit number
+		int min = 100000;
+		//adds min to random generated number to ensure 6 digits
+		String id = Integer.toString( (int) Math.round(Math.random() * (max - min + 1) + min));
+		 
+		//return the hash or if it already exists in commandId table recompute
+		synchronized (this.commandIds){
+		    id = (this.commandIds.get(id) != null) ? generateId() : id;	
+		}
+		return id;	
+	}
 	
 }
