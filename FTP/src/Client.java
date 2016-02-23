@@ -8,6 +8,7 @@
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.*;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
@@ -61,13 +62,15 @@ public class Client {
 			//non instance variables
 			Socket clientSocket = new Socket(this.hostName, this.normalPort);
 			Socket clientSocketTerminate = new Socket(this.hostName, this.terminatePort);
-			ClientThread clientThread = new ClientThread(clientSocket, clientSocketTerminate, input, commandIds);
+			
 
 			//if & is added, run the thread in the background.  Otherwise, join
 			String[] tokens = input.split(" ");
 			int tokensLength = tokens.length;
 			if (tokensLength == 3 ){
 				if (tokens[2].equals("&")){
+					input = tokens[0] + " " + tokens[1];
+					ClientThread clientThread = new ClientThread(clientSocket, clientSocketTerminate, input, commandIds);
 					clientThread.start();
 				}
 				else{
@@ -76,8 +79,8 @@ public class Client {
 				}
 			}
 			else{
+				ClientThread clientThread = new ClientThread(clientSocket, clientSocketTerminate, input, commandIds);
 				clientThread.start();
-				
 				try{
 					//this forces our client to be synchronous for now, program blocks until thread dies
 					clientThread.join();
