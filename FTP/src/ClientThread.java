@@ -66,6 +66,7 @@ public class ClientThread extends Thread {
 	public void run(){
 		
 		try {
+			System.out.println(this.cmd);
 			//this.send();
 			this.parse();
 			//this.receive();
@@ -136,16 +137,20 @@ public class ClientThread extends Thread {
 					byte[] buffer = new byte[16*1024];
 					FileOutputStream fos = new FileOutputStream(fileName);
 					while((count = this.in.read(buffer)) > 0){
-			    		    //CreateFile
+					
+			    		//CreateFile
 					    fos.write(buffer, 0, count);
 					}
 					fos.flush();
 					fos.close();
 					postFileResponse = "Received";
 			    }
-			    this.out.println(postFileResponse);
+			    System.out.println(postFileResponse);
+			    //this.out.println(postFileResponse);
+			    
+			    	
 			    //read line after wards. it wil either say file successfuy downloaded or it will be a filename to delete
-			  String response = this.br.readLine();
+			  /*String response = this.br.readLine();
 		
 			    if (!response.equals("File does not exist") || !response.equals("This is a directory, you can only move files.") || 
 			    		!response.equals("Error reading file") || !response.equals("Download successful.")){
@@ -158,7 +163,7 @@ public class ClientThread extends Thread {
 			    }
 			    else{
 			    	System.out.println(response);
-			    }
+			    }*/
 		}
 	}
 	private void receiveElse() throws IOException{

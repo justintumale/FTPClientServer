@@ -48,18 +48,20 @@ public class Client {
 	 * */
 	public void run() throws UnknownHostException, IOException, InterruptedException{
 		//create socket
-		this.clientSocket = new Socket(this.hostName, this.normalPort);
-		this.clientSocketTerminate = new Socket(this.hostName, this.terminatePort);
-		
+		//this.clientSocket = new Socket(this.hostName, this.normalPort);
 		//read commands from sys.in
 		String input = null;
 		while(true){
 			System.out.print("ftpclient> ");	
 			input = this.scanner.nextLine();
-		
-			ClientThread clientThread = new ClientThread(this.clientSocket, this.clientSocketTerminate, input);
+			
+			//non instance variables
+			Socket clientSocket = new Socket(this.hostName, this.normalPort);
+			Socket clientSocketTerminate = new Socket(this.hostName, this.terminatePort);
+			ClientThread clientThread = new ClientThread(clientSocket, clientSocketTerminate, input);
 			clientThread.start();
-
+			
+			/*
 			try{
 				//this forces our client to be synchronous for now, program blocks until thread dies
 				clientThread.join();
@@ -67,6 +69,7 @@ public class Client {
 			catch(InterruptedException ie){
 				ie.printStackTrace();
 			}
+			*/
 			if(input.equals("quit")) break;
 			
 		}
@@ -80,7 +83,7 @@ public class Client {
 	public static void main(String[] args){
 		boolean DEVELOPMENT = true;
 		if(DEVELOPMENT){
-			Client client = new Client("localhost", 60002, 60003);
+			Client client = new Client("localhost", 60000, 60001);
 			System.out.println("Running client!");
 			try {
 				client.run();

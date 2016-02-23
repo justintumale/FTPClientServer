@@ -92,7 +92,7 @@ public class Server {
 		
 		boolean DEVELOPMENT = true;
 		if (DEVELOPMENT){
-			Server myFtpServer = new Server("localhost", 60002, 60003);
+			Server myFtpServer = new Server("localhost", 60000, 60001);
 			myFtpServer.run();
 		}
 		else{

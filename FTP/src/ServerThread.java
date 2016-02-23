@@ -71,7 +71,8 @@ public class ServerThread implements Runnable {
 				response = this.parse(command);
 				
 				//return server's response
-				this.out.println(response + "\n");
+				if(response != null)
+					this.out.println(response + "\n");
 			}
 			//close reader and writer
 			this.out.close();
@@ -273,9 +274,8 @@ public class ServerThread implements Runnable {
 		    
 	    	fileInputStream.close();
 	    	fileOut.flush();
-	    	//client response after file sending;
-	    	System.out.println(this.br.readLine() + "client responsne");
-	    	return "Download successful.";
+	    	this.clientSocket.shutdownOutput();
+	    	return null;//"Download successful.";
 		
 	    }
 	    
