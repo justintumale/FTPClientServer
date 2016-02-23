@@ -31,7 +31,10 @@ public class ServerThread implements Runnable {
 	private HashMap<String, Boolean> commandIds;
 	private String commandId = null;
 	private final int TERMINATE_INTERVAL = 1000;
+	private final int BUF_SIZE = 16*1024;
+	private final int HEADER_OFFSET = 3;
 	private final byte[] VALID = new byte[]{1,1,1}, INVALID = new byte[]{0,0,0};
+	
 	
 	public ServerThread(Socket clientSocket, ServerSocket serverSocket, HashMap<String, Boolean> commandIds){
 		this.clientSocket = clientSocket;
@@ -181,7 +184,7 @@ public class ServerThread implements Runnable {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		byte bytes[] = new byte[16*1024];
+		byte bytes[] = new byte[BUF_SIZE];
 		try{		
 			//read the bytes into the input stream
 			in.read(bytes);
@@ -251,15 +254,15 @@ public class ServerThread implements Runnable {
 	    	//create an input stream for the file
 	    	FileInputStream fileInputStream = new FileInputStream(f);
 		    //create a byte array
-	    	byte[] buffer = new byte[16*1024];	    	
+	    	byte[] buffer = new byte[BUF_SIZE];	    	
 	    	int count, checkLimit = 0;
 		    //write the bytes to the output stream and add header to each packet
-	    	while ((count = fileInputStream.read(buffer, 3, 16*1024 - 3)) > 0){
+	    	while ((count = fileInputStream.read(buffer, HEADER_OFFSET, BUF_SIZE - HEADER_OFFSET)) > 0){
 	    		//copy appropriate header to offsetted buffer
 	    		System.arraycopy((keepActive) ? VALID : INVALID, 0, buffer, 0, VALID.length);
 	    		
 	    		//write to client. (count needs 3 because we only read count-3 from the fileinputstream)
-	    		fileOut.write(buffer, 0, count+3);
+	    		fileOut.write(buffer, 0, count+HEADER_OFFSET);
 	    		
 	    		//if cmd is terminated, notify client via headerInvalid then close stream
 	    		if(!keepActive) break;
@@ -392,8 +395,6 @@ public class ServerThread implements Runnable {
 		    id = (this.commandIds.get(id) != null) ? generateId() : id;	
 		}
 		return id;
-		//return (this.commandIds.get(id) != null) ? generateId() : id;	
-		
 	}
 	
 	
