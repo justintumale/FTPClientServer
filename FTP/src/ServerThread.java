@@ -30,6 +30,8 @@ public class ServerThread implements Runnable {
 	private BufferedReader br;
 	private HashMap<String, Boolean> commandIds;
 	private String commandId = null;
+	private final int TERMINATE_INTERVAL = 1000;
+	private final byte[] VALID = new byte[]{1,1,1}, INVALID = new byte[]{0,0,0};
 	
 	public ServerThread(Socket clientSocket, ServerSocket serverSocket, HashMap<String, Boolean> commandIds){
 		this.clientSocket = clientSocket;
@@ -244,29 +246,29 @@ public class ServerThread implements Runnable {
 	    		e1.printStackTrace();
 	    	}
 	    	
+	    	boolean keepActive = true;
+	    	
 	    	//create an input stream for the file
 	    	FileInputStream fileInputStream = new FileInputStream(f);
 		    //create a byte array
-	    	byte[] buffer = new byte[16*1024];//(int) f.length()];	    	
-		//System.out.println(f.length());
+	    	byte[] buffer = new byte[16*1024];	    	
 	    	int count, checkLimit = 0;
-		    //write the bytes to the output stream
-	    	while ((count = fileInputStream.read(buffer)) > 0){
-	    		fileOut.write(buffer, 0, count);
-	    		//check terminate flag every 1000 bytes
-			//System.out.println(count);
+		    //write the bytes to the output stream and add header to each packet
+	    	while ((count = fileInputStream.read(buffer, 3, 16*1024 - 3)) > 0){
+	    		//copy appropriate header to offsetted buffer
+	    		System.arraycopy((keepActive) ? VALID : INVALID, 0, buffer, 0, VALID.length);
+	    		
+	    		//write to client. (count needs 3 because we only read count-3 from the fileinputstream)
+	    		fileOut.write(buffer, 0, count+3);
+	    		
+	    		//if cmd is terminated, notify client via headerInvalid then close stream
+	    		if(!keepActive) break;
+	    		
 	    		checkLimit += count;
-	    		if(checkLimit >= 1000){
-	    			boolean keepActive;
+	    		//check terminate flag every 1000 bytes
+	    		if(checkLimit >= TERMINATE_INTERVAL){
 	    			synchronized (this.commandIds){
 	    				keepActive = this.commandIds.get(this.commandId).booleanValue();
-	    			}
-	    			if (!keepActive){
-	    				//delete file and break
-	    				fileInputStream.close();
-	    				fileOut.flush();
-	    				//create notifyClient and send it the filename
-	    				return fileName;
 	    			}
 	    			checkLimit = 0;
 	    		}
@@ -393,4 +395,7 @@ public class ServerThread implements Runnable {
 		//return (this.commandIds.get(id) != null) ? generateId() : id;	
 		
 	}
+	
+	
 }
+

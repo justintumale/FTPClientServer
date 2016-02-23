@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.FileSystemException;
+import java.util.Arrays;
 
 
 /**
@@ -33,6 +34,7 @@ public class ClientThread extends Thread {
     private BufferedReader br;
     private BufferedReader brTerminate;
     private PrintWriter out;
+    private final byte[] VALID = new byte[]{1,1,1}, INVALID = new byte[]{0,0,0};
     
 	/**
 	 * Creates new ClientThread with param socket and cmd 
@@ -134,12 +136,24 @@ public class ClientThread extends Thread {
 			    String postFileResponse = "TODO";
 			    if(acceptFile){
 					    //If the file exists then we need to write to file.
-					byte[] buffer = new byte[16*1024];
+					byte[] buffer = new byte[16*1024];	
 					FileOutputStream fos = new FileOutputStream(fileName);
 					while((count = this.in.read(buffer)) > 0){
-					
-			    		//CreateFile
-					    fos.write(buffer, 0, count);
+						//extract the header from packet received from server.
+						byte[] serverHeader = (byte[])Arrays.copyOfRange(buffer, 0, VALID.length);
+						if (Arrays.equals(serverHeader, VALID )){
+							//packet header is valid so keep writing file
+							fos.write(buffer, 3, count-3); //offset the buffer by 3, that is where our packet header is contained.
+						}
+						else if(Arrays.equals(serverHeader, INVALID )){
+							//we know that the file has been terminated. clean up.
+							//delete file
+							postFileResponse = "File transfer terminated";
+							break;
+						}
+						else{
+							System.out.println("Major unexpected error. Debug needed");
+						}
 					}
 					fos.flush();
 					fos.close();
