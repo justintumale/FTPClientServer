@@ -130,17 +130,20 @@ public class ClientThread extends Thread {
 				String fileName = tokens[1];
 			    boolean acceptFile = this.checkServerResponse();
 			    int count = -1;
+			    String postFileResponse = "TODO";
 			    if(acceptFile){
-				    //If the file exists then we need to write to file.
-				byte[] buffer = new byte[16*1024];
-				FileOutputStream fos = new FileOutputStream(fileName);
-				while((count = this.in.read(buffer)) > 0){
-		    		    //CreateFile
-				    fos.write(buffer, 0, count);
-				}
-				fos.flush();
-				fos.close();
+					    //If the file exists then we need to write to file.
+					byte[] buffer = new byte[16*1024];
+					FileOutputStream fos = new FileOutputStream(fileName);
+					while((count = this.in.read(buffer)) > 0){
+			    		    //CreateFile
+					    fos.write(buffer, 0, count);
+					}
+					fos.flush();
+					fos.close();
+					postFileResponse = "Received";
 			    }
+			    this.out.println(postFileResponse);
 			    //read line after wards. it wil either say file successfuy downloaded or it will be a filename to delete
 			  String response = this.br.readLine();
 		
@@ -156,9 +159,6 @@ public class ClientThread extends Thread {
 			    else{
 			    	System.out.println(response);
 			    }
-			
-				//read in file once server sends it
-				//return it or print
 		}
 	}
 	private void receiveElse() throws IOException{

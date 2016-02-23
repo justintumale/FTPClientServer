@@ -235,9 +235,9 @@ public class ServerThread implements Runnable {
 		
 	    	this.notifyClient(true);
 	    	//move code here
-	    	OutputStream out = null;
+	    	OutputStream fileOut = null;
 	    	try {
-	    		out = this.clientSocket.getOutputStream();
+	    		fileOut = this.clientSocket.getOutputStream();
 	    	} 
 	    	catch (IOException e1) {
 	    		e1.printStackTrace();
@@ -251,9 +251,9 @@ public class ServerThread implements Runnable {
 	    	int count, checkLimit = 0;
 		    //write the bytes to the output stream
 	    	while ((count = fileInputStream.read(buffer)) > 0){
-	    		out.write(buffer, 0, count);
+	    		fileOut.write(buffer, 0, count);
 	    		//check terminate flag every 1000 bytes
-			System.out.println(count);
+			//System.out.println(count);
 	    		checkLimit += count;
 	    		if(checkLimit >= 1000){
 	    			boolean keepActive;
@@ -263,7 +263,7 @@ public class ServerThread implements Runnable {
 	    			if (!keepActive){
 	    				//delete file and break
 	    				fileInputStream.close();
-	    				out.flush();
+	    				fileOut.flush();
 	    				//create notifyClient and send it the filename
 	    				return fileName;
 	    			}
@@ -272,7 +272,9 @@ public class ServerThread implements Runnable {
 	    	}
 		    
 	    	fileInputStream.close();
-	    	out.flush();  
+	    	fileOut.flush();
+	    	//client response after file sending;
+	    	System.out.println(this.br.readLine() + "client responsne");
 	    	return "Download successful.";
 		
 	    }
