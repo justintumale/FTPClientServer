@@ -8,6 +8,7 @@
 import java.io.IOException;
 import java.io.PrintStream;
 import java.net.*;
+import java.util.HashMap;
 import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -23,6 +24,7 @@ public class Client {
 	private int normalPort;
 	private int terminatePort;
 	private String hostName = null;
+	private volatile HashMap<String, ClientThread> commandIds;
 	/**
 	 * @params port number
 	 * */
@@ -51,6 +53,7 @@ public class Client {
 		//this.clientSocket = new Socket(this.hostName, this.normalPort);
 		//read commands from sys.in
 		String input = null;
+		commandIds = new HashMap<String, ClientThread>();
 		while(true){
 			System.out.print("ftpclient> ");	
 			input = this.scanner.nextLine();
@@ -58,19 +61,33 @@ public class Client {
 			//non instance variables
 			Socket clientSocket = new Socket(this.hostName, this.normalPort);
 			Socket clientSocketTerminate = new Socket(this.hostName, this.terminatePort);
-			ClientThread clientThread = new ClientThread(clientSocket, clientSocketTerminate, input);
-			clientThread.start();
-			
-			/*
-			try{
-				//this forces our client to be synchronous for now, program blocks until thread dies
-				clientThread.join();
+			ClientThread clientThread = new ClientThread(clientSocket, clientSocketTerminate, input, commandIds);
+
+			//if & is added, run the thread in the background.  Otherwise, join
+			String[] tokens = input.split(" ");
+			int tokensLength = tokens.length;
+			if (tokensLength == 3 ){
+				if (tokens[2].equals("&")){
+					clientThread.start();
+				}
+				else{
+					System.out.println(tokens[2]);
+					System.out.println("Please enter command in the proper format.");
+				}
 			}
-			catch(InterruptedException ie){
-				ie.printStackTrace();
+			else{
+				clientThread.start();
+				
+				try{
+					//this forces our client to be synchronous for now, program blocks until thread dies
+					clientThread.join();
+				}
+				catch(InterruptedException ie){
+					ie.printStackTrace();
+				}
+
+				if(input.equals("quit")) break;
 			}
-			*/
-			if(input.equals("quit")) break;
 			
 		}
 		if(this.clientSocket != null){

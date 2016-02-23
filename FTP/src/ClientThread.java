@@ -18,6 +18,7 @@ import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.nio.file.FileSystemException;
+import java.util.HashMap;
 
 
 /**
@@ -33,6 +34,9 @@ public class ClientThread extends Thread {
     private BufferedReader br;
     private BufferedReader brTerminate;
     private PrintWriter out;
+    private volatile HashMap<String, ClientThread> commandIds;
+    private String commandId = null;
+    private ClientThread self = null;
     
 	/**
 	 * Creates new ClientThread with param socket and cmd 
@@ -41,11 +45,12 @@ public class ClientThread extends Thread {
 	 * @param socket
 	 * @param cmd
 	 */
-	public ClientThread(Socket socketN,Socket socketT, String cmd){
+	public ClientThread(Socket socketN,Socket socketT, String cmd, HashMap<String, ClientThread> commandIds){
 		super();
 		this.socketN = socketN;
 		this.socketT = socketT;
 		this.cmd = cmd;
+		this.commandIds = commandIds;
 		try{
 		    this.in = socketN.getInputStream();
 		    this.br = new BufferedReader(new InputStreamReader(this.socketN.getInputStream()));
@@ -66,10 +71,14 @@ public class ClientThread extends Thread {
 	public void run(){
 		
 		try {
+			Thread.sleep(0);
 			System.out.println(this.cmd);
 			//this.send();
 			this.parse();
 			//this.receive();
+		}
+		catch(InterruptedException e){
+			System.out.println("Interrupted!");
 		}
 		catch(FileNotFoundException fnfe){
 			fnfe.printStackTrace();
@@ -81,6 +90,7 @@ public class ClientThread extends Thread {
 		catch(IOException ioe){
 			System.out.println("Error reading file or socket");
 		}
+
 
 	}
 	
@@ -219,6 +229,13 @@ public class ClientThread extends Thread {
 	    //Send the command to the server
 	    out.println(this.cmd);
 	    out.flush();	
+	    
+	    
+	    //Get the command ID
+		this.commandId = this.generateId();
+		//Put id / Thread into hashmap
+		this.commandIds.put(this.commandId, this );
+		System.out.println("From hashmap: " + commandIds.get(commandId));
 	
 		this.receiveGet();
 	}
@@ -228,6 +245,8 @@ public class ClientThread extends Thread {
 			System.out.println("Please enter the command in the proper format: put <filename>");
 		}
 		else{
+			
+			
 			String fileName = tokens[1];
 			//check if file exists
 			//if it doesnt, return error, let thread die
@@ -238,6 +257,12 @@ public class ClientThread extends Thread {
 			if (file.length() > Long.MAX_VALUE){
 				throw new FileSystemException("File size too large");
 			}
+			
+		    //Get the command ID
+			this.commandId = this.generateId();
+			//Put id / Thread into hashmap
+			this.commandIds.put(this.commandId, this );
+
 			
 			//else send command to nSocket		
 			//send command the server first
@@ -269,13 +294,23 @@ public class ClientThread extends Thread {
 	}
 	
 	private void sendTerminate() throws IOException{
-		//send command to Tsocket
-		 PrintWriter out = null;
-		  out = new PrintWriter(this.socketT.getOutputStream());
-		  out.println(this.cmd);
-		  out.flush();
-		  //send command
-		this.receiveTerminate();
+	    String[] tokens = this.cmd.split(" ");
+	    if (tokens.length != 2){
+	    	System.out.println("Please enter the command in the proper format: terminate <command ID>");
+	    }
+	    else{
+			//send command to Tsocket
+			  PrintWriter out = null;
+			  out = new PrintWriter(this.socketT.getOutputStream());
+			  out.println(this.cmd);
+			  out.flush();
+			  //interrupt thread
+			  System.out.println("terminate id:" + tokens[1]);
+			  ClientThread t = this.commandIds.get(tokens[1]);
+			  t.interrupt();
+			  //send command
+			  this.receiveTerminate();
+	    }
 	}
 	
 	/**
@@ -402,6 +437,21 @@ public class ClientThread extends Thread {
 		while (((input = this.br.readLine()) != null) && !input.equals("")){
 				System.out.println(input);
 		}
-	}	
+	}
+	
+	private String generateId(){
+		//max 6 digit number
+		int max = 999999;
+		//min 6 digit number
+		int min = 100000;
+		//adds min to random generated number to ensure 6 digits
+		String id = Integer.toString( (int) Math.round(Math.random() * (max - min + 1) + min));
+		 
+		//return the hash or if it already exists in commandId table recompute
+		synchronized (this.commandIds){
+		    id = (this.commandIds.get(id) != null) ? generateId() : id;	
+		}
+		return id;	
+	}
 	
 }
