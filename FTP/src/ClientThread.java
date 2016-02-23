@@ -130,6 +130,9 @@ public class ClientThread extends Thread {
 		String inputCommandId = this.br.readLine();
 		System.out.println(inputCommandId);
 		
+		//put the command ID into the hashmap
+		this.commandIds.put(inputCommandId, this );
+		
 		//read in another line, it will tell you if file exists or not
 		//if file exists read it, otherwise end thread
 		String[] tokens = this.cmd.split(" ");
@@ -230,12 +233,14 @@ public class ClientThread extends Thread {
 	    out.println(this.cmd);
 	    out.flush();	
 	    
-	    
-	    //Get the command ID
-		this.commandId = this.generateId();
-		//Put id / Thread into hashmap
-		this.commandIds.put(this.commandId, this );
-		System.out.println("From hashmap: " + commandIds.get(commandId));
+	    /*
+	     * 			
+		    //Get the command ID
+			this.commandId = this.generateId();
+			//Put id / Thread into hashmap
+			this.commandIds.put(this.commandId, this );
+	     */
+
 	
 		this.receiveGet();
 	}
@@ -257,11 +262,6 @@ public class ClientThread extends Thread {
 			if (file.length() > Long.MAX_VALUE){
 				throw new FileSystemException("File size too large");
 			}
-			
-		    //Get the command ID
-			this.commandId = this.generateId();
-			//Put id / Thread into hashmap
-			this.commandIds.put(this.commandId, this );
 
 			
 			//else send command to nSocket		
@@ -274,6 +274,9 @@ public class ClientThread extends Thread {
 		  		String input = null;
 		  		input = this.br.readLine();
 		  		System.out.println("Put- command id: " + input);
+		  		
+				//Put id / Thread into hashmap
+				this.commandIds.put(input, this );
 		    
 		    //stream the file next
 			this.readBytesAndOutputToStream(fileName);	

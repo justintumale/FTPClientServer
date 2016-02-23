@@ -74,7 +74,6 @@ public class Client {
 					clientThread.start();
 				}
 				else{
-					System.out.println(tokens[2]);
 					System.out.println("Please enter command in the proper format.");
 				}
 			}
