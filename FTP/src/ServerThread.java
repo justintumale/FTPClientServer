@@ -184,7 +184,52 @@ public class ServerThread implements Runnable {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		byte bytes[] = new byte[BUF_SIZE];
+		byte buffer[] = new byte[BUF_SIZE];
+		
+		
+		//////////////
+		int count, limit = 0;
+		File f = new File(this.currentWorkingDir, fileName);
+		FileOutputStream fos;
+		boolean keepActive = true;
+		try {
+			fos = new FileOutputStream(f);
+			//receive the bytes from the client
+			while ((count = in.read(buffer)) > 0){
+				//write the bytes to a buffer
+				fos.write(buffer);
+				//increment the limit count
+				limit += count;
+				//check if weve reached the interval
+				if (limit >= TERMINATE_INTERVAL){
+					//reset the limit
+					limit = 0;
+					//check the hash table
+	    			synchronized (this.commandIds){
+	    				keepActive = this.commandIds.get(this.commandId).booleanValue();
+	    			}
+	    			//if the command was terminated, close the stream and delete the 
+	    			//partial file from the directory
+					if (!keepActive){
+						fos.close();
+						this.delete(fileName);
+						return ("File deleted from server.");
+					}
+				}
+			}
+			fos.close();
+			
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		
+
+		//////////////
+		/*
 		try{		
 			//read the bytes into the input stream
 			in.read(bytes);
@@ -195,14 +240,15 @@ public class ServerThread implements Runnable {
 			//Output into a file
 			File f = new File(this.currentWorkingDir, fileName);
 	    	FileOutputStream fos = new FileOutputStream(f);
-	    	fos.write(bytes);
+	    	fos.write(buffer);
 	    	fos.close();
 			
 		}
+		
 		catch(IOException ioe){
 			return "File can not be written";
 		}
-		
+		*/
 		return fileName + " successfully copied to server";
 	}
 
@@ -258,6 +304,11 @@ public class ServerThread implements Runnable {
 	    	int count, checkLimit = 0;
 		    //write the bytes to the output stream and add header to each packet
 	    	while ((count = fileInputStream.read(buffer, HEADER_OFFSET, BUF_SIZE - HEADER_OFFSET)) > 0){
+	    		try {
+					Thread.sleep(5000);
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
 	    		//copy appropriate header to offsetted buffer
 	    		System.arraycopy((keepActive) ? VALID : INVALID, 0, buffer, 0, VALID.length);
 	    		
