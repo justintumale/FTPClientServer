@@ -128,9 +128,6 @@ public class ClientThread extends Thread {
 		String inputCommandId = this.br.readLine();
 		System.out.println(inputCommandId);
 		
-		//put the command ID into the hashmap
-		this.hashGet(inputCommandId, this );
-		
 		//read in another line, it will tell you if file exists or not
 		//if file exists read it, otherwise end thread
 		String[] tokens = this.cmd.split(" ");
@@ -142,7 +139,7 @@ public class ClientThread extends Thread {
 				String fileName = tokens[1];
 			    boolean acceptFile = this.checkServerResponse();
 			    int count = -1;
-			    String postFileResponse = "TODO";
+			    String postFileResponse = "Received";
 			    if(acceptFile){
 					    //If the file exists then we need to write to file.
 					byte[] buffer = new byte[BUF_SIZE];	
@@ -166,27 +163,8 @@ public class ClientThread extends Thread {
 					}
 					fos.flush();
 					fos.close();
-					postFileResponse = "Received";
 			    }
 			    System.out.println(postFileResponse);
-			    //this.out.println(postFileResponse);
-			    
-			    	
-			    //read line after wards. it wil either say file successfuy downloaded or it will be a filename to delete
-			  /*String response = this.br.readLine();
-		
-			    if (!response.equals("File does not exist") || !response.equals("This is a directory, you can only move files.") || 
-			    		!response.equals("Error reading file") || !response.equals("Download successful.")){
-			    	
-					File file = new File(response);
-					if (file.exists()){
-						file.delete();
-						System.out.println("File deleted");
-					}		
-			    }
-			    else{
-			    	System.out.println(response);
-			    }*/
 		}
 	}
 	
@@ -314,71 +292,6 @@ public class ClientThread extends Thread {
 
     }
 
-	/**
-	 * Helper method for send. Reads a file to bytes then outputs it to the output stream
-	 * @param fileName String the name of the file to output to the stream
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 * @throws FileSystemException
-	 */
-	private void readBytesAndOutputToStream(String fileName) 
-			throws FileNotFoundException, IOException, FileSystemException{
-		
-		File file = new File(fileName);
-		if (!file.exists()){
-		    throw new FileNotFoundException();
-		}
-		if (file.length() > Long.MAX_VALUE){
-			throw new FileSystemException("File size too large");
-		}
-		
-		//get the output stream
-		OutputStream out = this.socketN.getOutputStream();
-
-		//create an input stream for the file
-		FileInputStream fileInputStream = new FileInputStream(file);
-		
-		//create a byte array
-		byte[] bytes = new byte[(int) file.length()];	    	
-    	
-		//write the bytes to the output stream
-    	int count;
-    	while ((count = fileInputStream.read(bytes)) > 0){
-    		out.write(bytes, 0, count);
-    	}
-    	
-    	//close the file input stream
-    	fileInputStream.close();
-	}
-	
-	
-	
-	/**
-	 * Helper method; Receives byte streams in order to read then write to particular file
-	 * 
-	 * @param fileName
-	 * @param fileWriter
-	 * @param fileDownloader
-	 * @throws IOException
-	 */
-	@SuppressWarnings("unused")
-	private void receiveByteStreamAndWriteToFile(String fileName, FileOutputStream fileWriter, 
-			InputStream fileDownloader) throws IOException{
-
-		try{    
-			//write file to client system
-			byte bytes[] = new byte[16*1024];
-			int count;
-			while ((count = fileDownloader.read(bytes)) > 0) {
-				fileWriter.write(bytes, 0, count);
-			}//while
-		}//try
-		finally{
-			if (fileWriter != null) fileWriter.close();
-			if (fileDownloader != null) fileDownloader.close();
-		}//finally
-		
-	}
 
 	/**
 	 * Prints response by user
