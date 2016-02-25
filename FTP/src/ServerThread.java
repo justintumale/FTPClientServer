@@ -28,7 +28,7 @@ public class ServerThread implements Runnable {
 	private File currentWorkingDir;
 	private PrintWriter out;
 	private BufferedReader br;
-	private HashMap<String, Boolean> commandIds;
+	private volatile HashMap<String, Boolean> commandIds;
 	private String commandId = null;
 	private final int TERMINATE_INTERVAL = 1000;
 	private final int BUF_SIZE = 16*1024;
@@ -167,6 +167,7 @@ public class ServerThread implements Runnable {
      * @return success or failure message
      * */
 	private String put(String fileName) {
+		byte buffer[] = new byte[BUF_SIZE];
 		synchronized (this.commandIds){
 			//add cmd Id to hashtable
 			this.commandId = this.generateId();
@@ -185,8 +186,6 @@ public class ServerThread implements Runnable {
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}
-		byte buffer[] = new byte[BUF_SIZE];
-		
 		
 		//////////////
 		int count, limit = 0;
@@ -201,7 +200,7 @@ public class ServerThread implements Runnable {
 				fos.write(buffer);
 				//increment the limit count
 				limit += count;
-				//check if weve reached the interval
+				//check if we've reached the interval
 				if (limit >= TERMINATE_INTERVAL){
 					//reset the limit
 					limit = 0;
@@ -212,9 +211,10 @@ public class ServerThread implements Runnable {
 	    			//if the command was terminated, close the stream and delete the 
 	    			//partial file from the directory
 					if (!keepActive){
+						System.out.println("Thread received terminate command. put process killed.");
 						fos.close();
 						this.delete(fileName);
-						return fileName + " deleted from server.";
+						return "Received terminate command, file: " + fileName + " download stopped and deleted from server.";
 					}
 				}
 			}
@@ -222,34 +222,11 @@ public class ServerThread implements Runnable {
 			
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
+			return "Error on server";
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return "Error on server";
 		}
-		
-		
-
-		//////////////
-		/*
-		try{		
-			//read the bytes into the input stream
-			in.read(bytes);
-			
-			//print this. dont remove.
-			System.out.println("");
-						
-			//Output into a file
-			File f = new File(this.currentWorkingDir, fileName);
-	    	FileOutputStream fos = new FileOutputStream(f);
-	    	fos.write(buffer);
-	    	fos.close();
-			
-		}
-		
-		catch(IOException ioe){
-			return "File can not be written";
-		}
-		*/
 		return fileName + " successfully copied to server";
 	}
 
@@ -269,10 +246,16 @@ public class ServerThread implements Runnable {
 			this.commandId
 		);
 	    File f = null;
+	    
+	    //Create new file
 	    try{
 	    	f = new File(this.currentWorkingDir, fileName);
 	    	if (!f.exists()){
 	    		throw new FileNotFoundException();
+	    	}
+	    	if(f.isDirectory() == true){
+	    		this.notifyClient(false);
+	    		return "This is a directory, you can only move files.";
 	    	}
 	    }
 	    catch(FileNotFoundException e){
@@ -280,22 +263,12 @@ public class ServerThread implements Runnable {
 	    	return "File does not exist";   
 	    }
 	    
-	    try{
-	    	if(f.isDirectory() == true){
-	    		this.notifyClient(false);
-	    		return "This is a directory, you can only move files.";
-	    	}
-		
+	    //
+	    try{	    	
 	    	this.notifyClient(true);
 	    	//move code here
-	    	OutputStream fileOut = null;
-	    	try {
-	    		fileOut = this.clientSocket.getOutputStream();
-	    	} 
-	    	catch (IOException e1) {
-	    		e1.printStackTrace();
-	    	}
-	    	
+	    	OutputStream fileOut = this.clientSocket.getOutputStream();
+
 	    	boolean keepActive = true;
 	    	
 	    	//create an input stream for the file
@@ -324,7 +297,6 @@ public class ServerThread implements Runnable {
 	    			checkLimit = 0;
 	    		}
 	    	}
-		    
 	    	fileInputStream.close();
 	    	fileOut.flush();
 	    	this.clientSocket.shutdownOutput();

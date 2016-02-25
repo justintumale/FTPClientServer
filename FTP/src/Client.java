@@ -25,7 +25,6 @@ public class Client {
 	private int normalPort;
 	private int terminatePort;
 	private String hostName = null;
-	private volatile HashMap<String, ClientThread> commandIds;
 	/**
 	 * @params port number
 	 * */
@@ -54,7 +53,6 @@ public class Client {
 		//this.clientSocket = new Socket(this.hostName, this.normalPort);
 		//read commands from sys.in
 		String input = null;
-		commandIds = new HashMap<String, ClientThread>();
 		while(true){
 			System.out.print("ftpclient> ");	
 			input = this.scanner.nextLine();
@@ -70,7 +68,7 @@ public class Client {
 			if (tokensLength == 3 ){
 				if (tokens[2].equals("&")){
 					input = tokens[0] + " " + tokens[1];
-					ClientThread clientThread = new ClientThread(clientSocket, clientSocketTerminate, input, commandIds);
+					ClientThread clientThread = new ClientThread(clientSocket, clientSocketTerminate, input);
 					clientThread.start();
 				}
 				else{
@@ -78,7 +76,7 @@ public class Client {
 				}
 			}
 			else{
-				ClientThread clientThread = new ClientThread(clientSocket, clientSocketTerminate, input, commandIds);
+				ClientThread clientThread = new ClientThread(clientSocket, clientSocketTerminate, input);
 				clientThread.start();
 				try{
 					//this forces our client to be synchronous for now, program blocks until thread dies
