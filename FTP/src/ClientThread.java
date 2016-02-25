@@ -78,14 +78,7 @@ public class ClientThread extends Thread {
 	public void run(){
 		
 		try {
-			Thread.sleep(0);
-			System.out.println(this.cmd);
-			//this.send();
 			this.parse();
-			//this.receive();
-		}
-		catch(InterruptedException e){
-			System.out.println("Interrupted!");
 		}
 		catch(FileNotFoundException fnfe){
 			fnfe.printStackTrace();
@@ -119,70 +112,7 @@ public class ClientThread extends Thread {
 		else{
 			this.sendElse();
 		}
-	}
-	
-	/**
-	 * Sends signals
-	 * @throws FileNotFoundException
-	 * @throws IOException
-	 * @throws FileSystemException
-	 */
-	private void send() throws FileNotFoundException, IOException, FileSystemException{
-	    String[] tokens = this.cmd.split(" ");		
-		//sending a file to server
-		if(tokens[0].equals("put") && tokens.length == 2){
-			String fileName = tokens[1];
-			
-			//send command the server first
-		    
-		    out.println(this.cmd);
-		    out.flush();	
-		    
-		    //stream the file next
-			this.readBytesAndOutputToStream(fileName);			
-		}
-		//sending string to server
-		else{
-		    //Get the output stream to the server
-		    PrintWriter out = null;
-		    out = new PrintWriter(this.socketN.getOutputStream());
-		    //Send the command to the server
-		    out.println(this.cmd);
-		    out.flush();	
-		}
-	}
-	
-	/**
-	 * Receives signals and checks the command to tokenize them
-	 * @throws IOException
-	 */
-	private void receive() throws IOException{
-	    String[] tokens = this.cmd.split(" ");
-	    String cmd = tokens[0];
-	     	
-    	if (tokens.length > 1 && cmd.equals("get")){
-    		 String fileName = tokens[1];
-    		//case 1, client issued a get file command and server is currently returning file. 
-	    
-		    //first check to make sure there was no error in getting file
-		    //check server's response. 
-		    boolean acceptFile = this.checkServerResponse();
-		    if(acceptFile){
-			    //If the file exists then we need to write to file.
-			    byte[] bytes = new byte[16*1024];
-			    
-			    this.in.read(bytes);
-			    
-			    //CreateFile
-			    FileOutputStream fos = new FileOutputStream(fileName);
-			    fos.write(bytes);
-			    fos.close();
-		    }
-    	}
-    	//print response is called no matter what
-	    printResponse();
-	}//receive
-	
+	}	
 	
 	private void sendGet() throws IOException{
 		//send command on Nsocket
@@ -192,15 +122,6 @@ public class ClientThread extends Thread {
 	    //Send the command to the server
 	    out.println(this.cmd);
 	    out.flush();	
-	    
-	    /*
-	     * 			
-		    //Get the command ID
-			this.commandId = this.generateId();
-			//Put id / Thread into hashmap
-			this.commandIds.put(this.commandId, this );
-	     */
-
 	
 		this.receiveGet();
 	}
@@ -310,9 +231,9 @@ public class ClientThread extends Thread {
 				//write buffer onto output stream
 				fos.write(buffer);
 			}
+			fis.close();
 			///
 			/*
-
 		    //read in a line it will tell you command ID
 	  		String input = null;
 	  		input = this.br.readLine();

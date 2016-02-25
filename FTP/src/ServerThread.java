@@ -177,6 +177,7 @@ public class ServerThread implements Runnable {
 		this.out.println(
 			this.commandId
 		);
+		this.out.flush();
 		
 	    InputStream in = null;
 		try {
