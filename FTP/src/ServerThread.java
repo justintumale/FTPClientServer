@@ -282,16 +282,22 @@ public class ServerThread implements Runnable {
 	    		
 	    		//write to client. (count needs 3 because we only read count-3 from the fileinputstream)
 	    		fileOut.write(buffer, 0, count + HEADER_OFFSET);
-	    		try {
+	    		
+	    		//sleep for testing terminate
+	    		/*try {
 	    			System.out.println("sleeping for 10 sec");
 					Thread.sleep(10000);
 					System.out.println("waking up");
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}
+				}*/
+	    		
 	    		//if cmd is terminated, notify client via headerInvalid then close stream
-	    		if(!keepActive) break;
+	    		if(!keepActive) {
+	    			System.out.println("Terminate command received in get worker thread.");
+	    			break;
+	    		}
 	    		
 	    		checkLimit += count;
 	    		//check terminate flag every 1000 bytes

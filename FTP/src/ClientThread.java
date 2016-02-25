@@ -158,7 +158,7 @@ public class ClientThread extends Thread {
 							break;
 						}
 						else{
-							System.out.println("Major unexpected error. Debug needed header values: " + Arrays.toString(serverHeader));
+							System.out.println("Major unexpected error. Debug needed the header values are: " + Arrays.toString(serverHeader));
 						}
 					}
 					fos.flush();
