@@ -163,8 +163,12 @@ public class ClientThread extends Thread {
 					}
 					fos.flush();
 					fos.close();
+					System.out.println(postFileResponse);
 			    }
-			    System.out.println(postFileResponse);
+			    else{
+			    	//if file was not found or error on server prevented file transfer starting.
+			    	System.out.println(this.br.readLine());
+			    } 
 		}
 	}
 	
