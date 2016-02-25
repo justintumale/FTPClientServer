@@ -262,8 +262,6 @@ public class ServerThread implements Runnable {
 	    	this.notifyClient(false);
 	    	return "File does not exist";   
 	    }
-	    
-	    //
 	    try{	    	
 	    	this.notifyClient(true);
 	    	//move code here
@@ -278,13 +276,20 @@ public class ServerThread implements Runnable {
 	    	int count, checkLimit = 0;
 		    //write the bytes to the output stream and add header to each packet
 	    	while ((count = fileInputStream.read(buffer, HEADER_OFFSET, BUF_SIZE - HEADER_OFFSET)) > 0){
-	
+	    		
 	    		//copy appropriate header to offsetted buffer
 	    		System.arraycopy((keepActive) ? VALID : INVALID, 0, buffer, 0, VALID.length);
 	    		
 	    		//write to client. (count needs 3 because we only read count-3 from the fileinputstream)
-	    		fileOut.write(buffer, 0, count+HEADER_OFFSET);
-	    		
+	    		fileOut.write(buffer, 0, count + HEADER_OFFSET);
+	    		try {
+	    			System.out.println("sleeping for 10 sec");
+					Thread.sleep(10000);
+					System.out.println("waking up");
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
 	    		//if cmd is terminated, notify client via headerInvalid then close stream
 	    		if(!keepActive) break;
 	    		
