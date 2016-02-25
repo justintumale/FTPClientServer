@@ -39,11 +39,9 @@ public class ClientThread extends Thread {
 	private final int BUF_SIZE = 16*1024;
 	private final int HEADER_OFFSET = 3;
     private final byte[] VALID = new byte[]{1,1,1}, INVALID = new byte[]{0,0,0};
-    private volatile HashMap<String, ClientThread> commandIds;
     private String commandId = null;
     private ClientThread self = null;
-    private Object lock1 = new Object();
-    private Object lock2 = new Object();
+
     
 	/**
 	 * Creates new ClientThread with param socket and cmd 
@@ -52,12 +50,11 @@ public class ClientThread extends Thread {
 	 * @param socket
 	 * @param cmd
 	 */
-	public ClientThread(Socket socketN,Socket socketT, String cmd, HashMap<String, ClientThread> commandIds){
+	public ClientThread(Socket socketN,Socket socketT, String cmd){
 		super();
 		this.socketN = socketN;
 		this.socketT = socketT;
 		this.cmd = cmd;
-		this.commandIds = commandIds;
 		try{
 		    this.in = socketN.getInputStream();
 		    this.br = new BufferedReader(new InputStreamReader(this.socketN.getInputStream()));
@@ -200,7 +197,7 @@ public class ClientThread extends Thread {
 			System.out.println("Please enter the command in the proper format: put <filename>");
 		}
 		else{
-			
+			byte[] buffer = new byte[BUF_SIZE];
 			
 			String fileName = tokens[1];
 			//check if file exists
@@ -209,7 +206,7 @@ public class ClientThread extends Thread {
 			if (!file.exists()){
 			    throw new FileNotFoundException();
 			}
-			if (file.length() > Long.MAX_VALUE){
+			if ((long) file.length() > Long.MAX_VALUE){
 				throw new FileSystemException("File size too large");
 			}
 			//else send command to nSocket		
@@ -222,7 +219,7 @@ public class ClientThread extends Thread {
 		    //open the output stream
 			OutputStream fos = this.socketN.getOutputStream();
 			//create a buffer for the bytes to be sent through the outstream
-			byte[] buffer = new byte[BUF_SIZE];
+			
 			//open the file's input stream
 			FileInputStream fis = new FileInputStream(file);
 			int count = 0;
@@ -298,20 +295,6 @@ public class ClientThread extends Thread {
 		String input = null;
 		input = this.brTerminate.readLine();
 		System.out.println("Message from the server:" + input);
-	}
-	
-
-	
-	private void hashPut(String id, ClientThread thread){
-		synchronized(lock1){
-			this.commandIds.put(id, thread);
-		}
-	}
-	
-	private void hashGet(String id, ClientThread thread){
-		synchronized(lock2){
-			this.commandIds.put(id, thread);
-		}
 	}
 		
 	/**
@@ -409,19 +392,5 @@ public class ClientThread extends Thread {
 		}
 	}
 	
-	private String generateId(){
-		//max 6 digit number
-		int max = 999999;
-		//min 6 digit number
-		int min = 100000;
-		//adds min to random generated number to ensure 6 digits
-		String id = Integer.toString( (int) Math.round(Math.random() * (max - min + 1) + min));
-		 
-		//return the hash or if it already exists in commandId table recompute
-		synchronized (this.commandIds){
-		    id = (this.commandIds.get(id) != null) ? generateId() : id;	
-		}
-		return id;	
-	}
 	
 }
