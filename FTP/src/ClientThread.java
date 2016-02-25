@@ -291,14 +291,28 @@ public class ClientThread extends Thread {
 			if (file.length() > Long.MAX_VALUE){
 				throw new FileSystemException("File size too large");
 			}
-
-			
 			//else send command to nSocket		
 			//send command the server first
 		    PrintWriter out = new PrintWriter(this.socketN.getOutputStream());
 		    out.println(this.cmd);
 		    out.flush();	
 		    
+			///
+		    //open the output stream
+			OutputStream fos = this.socketN.getOutputStream();
+			//create a buffer for the bytes to be sent through the outstream
+			byte[] buffer = new byte[BUF_SIZE];
+			//open the file's input stream
+			FileInputStream fis = new FileInputStream(file);
+			int count = 0;
+			//grab the bytes from the file
+			while ((count = fis.read(buffer)) > 0){
+				//write buffer onto output stream
+				fos.write(buffer);
+			}
+			///
+			/*
+
 		    //read in a line it will tell you command ID
 	  		String input = null;
 	  		input = this.br.readLine();
@@ -310,6 +324,7 @@ public class ClientThread extends Thread {
 		    //stream the file next
 			this.readBytesAndOutputToStream(fileName);	
 			// then send the actual file
+			*/
 			
 			this.receivePut();
 		}
@@ -350,10 +365,7 @@ public class ClientThread extends Thread {
 			  out = new PrintWriter(this.socketT.getOutputStream());
 			  out.println(this.cmd);
 			  out.flush();
-			  //interrupt thread
-			  System.out.println("terminate id:" + tokens[1]);
-			  ClientThread t = this.commandIds.get(tokens[1]);
-			  t.interrupt();
+
 			  
 			  //send command
 			  this.receiveTerminate();

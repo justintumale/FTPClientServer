@@ -213,7 +213,7 @@ public class ServerThread implements Runnable {
 					if (!keepActive){
 						fos.close();
 						this.delete(fileName);
-						return ("File deleted from server.");
+						return fileName + " deleted from server.";
 					}
 				}
 			}
@@ -304,11 +304,7 @@ public class ServerThread implements Runnable {
 	    	int count, checkLimit = 0;
 		    //write the bytes to the output stream and add header to each packet
 	    	while ((count = fileInputStream.read(buffer, HEADER_OFFSET, BUF_SIZE - HEADER_OFFSET)) > 0){
-	    		try {
-					Thread.sleep(5000);
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				}
+	
 	    		//copy appropriate header to offsetted buffer
 	    		System.arraycopy((keepActive) ? VALID : INVALID, 0, buffer, 0, VALID.length);
 	    		
