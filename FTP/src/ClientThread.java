@@ -193,8 +193,7 @@ public class ClientThread extends Thread {
 			}
 			//else send command to nSocket		
 			//send command the server first
-		    PrintWriter out = new PrintWriter(this.socketN.getOutputStream());
-		    out.println(this.cmd);
+		    this.out.println(this.cmd);
 		    out.flush();	
 		    
 			///
