@@ -240,6 +240,8 @@ public class ServerThread implements Runnable {
 						System.out.println("Thread received terminate command. put process killed.");
 						fos.flush();
 						fos.close();
+						//try
+						this.clientSocket.shutdownInput();
 						this.delete(fileName);
 						return "Received terminate command, file: " + fileName + " download stopped and deleted from server.";
 					}
