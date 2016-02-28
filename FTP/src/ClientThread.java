@@ -199,16 +199,20 @@ public class ClientThread extends Thread {
 			///
 		    //open the output stream
 			OutputStream fos = this.socketN.getOutputStream();
+			
 			//create a buffer for the bytes to be sent through the outstream
 			
 			//open the file's input stream
 			FileInputStream fis = new FileInputStream(file);
 			int count = -1;
 			//grab the bytes from the file
+			int packetCount = 0;
 			while ((count = fis.read(buffer)) > 0){
 				//write buffer onto output stream
 				fos.write(buffer);
+				packetCount++;
 			}
+			System.out.println(packetCount);
 			fis.close();
 			fos.flush();
 			this.socketN.shutdownOutput();

@@ -208,7 +208,7 @@ public class ServerThread implements Runnable {
 		try {
 			FileOutputStream fos = new FileOutputStream(fileName);
 			//receive the bytes from the client
-			while ((count = in.read(buffer)) > 0){
+			while ((count = in.read(buffer, 0, BUF_SIZE)) > 0){
 				//write the bytes to a buffer
 				fos.write(buffer);
 				//increment the limit count
