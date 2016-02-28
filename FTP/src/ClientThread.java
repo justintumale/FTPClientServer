@@ -135,7 +135,6 @@ public class ClientThread extends Thread {
 			System.out.println("Please enter the command in the proper format: get <filename>");
 		}
 		else{
-				//TODO cant assume that there is a tokens[1]
 				String fileName = tokens[1];
 			    boolean acceptFile = this.checkServerResponse();
 			    int count = -1;
@@ -236,8 +235,9 @@ public class ClientThread extends Thread {
 				String input = null;
 			
 		//read in another line saying if writing was successful or not
-		input = this.br.readLine();
-		System.out.println("Message from the server: " + input);	
+		//input = this.br.readLine();
+		//System.out.println("Message from the server: " + input);	
+			System.out.println("File sent");
 	}
 	
 	private void sendElse() throws IOException{

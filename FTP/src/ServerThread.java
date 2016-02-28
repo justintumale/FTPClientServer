@@ -227,7 +227,7 @@ public class ServerThread implements Runnable {
 			e.printStackTrace();
 			return "Error on server";
 		}
-		return fileName + " successfully copied to server";
+		return null;//fileName + " successfully copied to server";
 	}
 
 	/**
