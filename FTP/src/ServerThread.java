@@ -234,8 +234,9 @@ public class ServerThread implements Runnable {
 						return "Received terminate command, file: " + fileName + " download stopped and deleted from server.";
 					}
 				}
+				System.out.println("Packet count0" + packetCount);
 			}
-			System.out.println("Packet count" + packetCount);
+			System.out.println("Packet count1" + packetCount);
 			fos.flush();
 			fos.close();
 			
