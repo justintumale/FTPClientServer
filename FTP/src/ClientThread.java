@@ -194,7 +194,8 @@ public class ClientThread extends Thread {
 			//else send command to nSocket		
 			//send command the server first
 		    this.out.println(this.cmd);
-		    out.flush();	
+		    out.flush();
+			System.out.println("Command id: " + this.br.readLine());
 		    
 			///
 		    //open the output stream
@@ -210,6 +211,7 @@ public class ClientThread extends Thread {
 				fos.write(buffer);
 			}
 			fis.close();
+			this.receivePut();
 			///
 			/*
 		    //read in a line it will tell you command ID
@@ -225,7 +227,7 @@ public class ClientThread extends Thread {
 			// then send the actual file
 			*/
 			
-			this.receivePut();
+		
 		}
 	}
 	
