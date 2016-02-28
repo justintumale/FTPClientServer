@@ -205,11 +205,18 @@ public class ClientThread extends Thread {
 			//open the file's input stream
 			FileInputStream fis = new FileInputStream(file);
 			int count = -1;
-			//grab the bytes from the file
-			while ((count = fis.read(buffer)) > 0){
-				//write buffer onto output stream
-				fos.write(buffer);
-				fos.write(buffer, 0, count);
+			
+			try{
+				//grab the bytes from the file
+				while ((count = fis.read(buffer)) > 0){
+					//write buffer onto output stream
+					fos.write(buffer);
+					fos.write(buffer, 0, count);
+				}
+			}
+			catch(IOException ioe){
+				System.out.println("File transfer terminated.");
+				return;
 			}
 			fis.close();
 			fos.flush();
