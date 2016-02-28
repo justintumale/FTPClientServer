@@ -202,11 +202,11 @@ public class ServerThread implements Runnable {
 		
 		//////////////
 		int count = -1, limit = 0;
-		//File f = new File(this.currentWorkingDir, fileName);
+		File f = new File(this.currentWorkingDir, fileName);
 	
 		boolean keepActive = true;
 		try {
-			FileOutputStream fos = new FileOutputStream(fileName);
+			FileOutputStream fos = new FileOutputStream(f);
 			//receive the bytes from the client
 			
 			while ((count = in.read(buffer, 0, BUF_SIZE)) > 0){

@@ -206,33 +206,14 @@ public class ClientThread extends Thread {
 			FileInputStream fis = new FileInputStream(file);
 			int count = -1;
 			//grab the bytes from the file
-			int packetCount = 0;
 			while ((count = fis.read(buffer)) > 0){
 				//write buffer onto output stream
 				fos.write(buffer);
-				packetCount++;
 			}
-			System.out.println(packetCount);
 			fis.close();
 			fos.flush();
 			this.socketN.shutdownOutput();
 			this.receivePut();
-			///
-			/*
-		    //read in a line it will tell you command ID
-	  		String input = null;
-	  		input = this.br.readLine();
-	  		System.out.println("Put- command id: " + input);
-	  		
-			//Put id / Thread into hashmap
-		    this.hashPut(input, this);
-		    
-		    //stream the file next
-			this.readBytesAndOutputToStream(fileName);	
-			// then send the actual file
-			*/
-			
-		
 		}
 	}
 	
