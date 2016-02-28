@@ -209,7 +209,7 @@ public class ClientThread extends Thread {
 			int packetCount = 0;
 			while ((count = fis.read(buffer)) > 0){
 				//write buffer onto output stream
-				fos.write(buffer);
+				fos.write(buffer, 0, count);
 				packetCount++;
 			}
 			System.out.println(packetCount);
