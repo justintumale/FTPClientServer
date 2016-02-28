@@ -1,6 +1,7 @@
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.io.IOException;
 import java.net.*;
 
@@ -15,6 +16,7 @@ public class Server {
 	private ServerListener listenerT = null;
 	private ServerListener listenerN = null;
 	private volatile HashMap<String, Boolean> commandIds;
+	public static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
 	
 	public Server(String address, int nPort, int tPort){
 		this.address = address;

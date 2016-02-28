@@ -19,6 +19,7 @@ import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.util.HashMap;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 /**
  * Implements Runnable to override the inherited run method
  */
@@ -35,6 +36,7 @@ public class ServerThread implements Runnable {
 	private final int BUF_SIZE = 16*1024;
 	private final int HEADER_OFFSET = 3;
 	private final byte[] VALID = new byte[]{1,1,1}, INVALID = new byte[]{0,0,0};
+	private final ReentrantReadWriteLock lock = Server.lock;
 	
 	
 	public ServerThread(Socket clientSocket, ServerSocket serverSocket, HashMap<String, Boolean> commandIds){
@@ -123,15 +125,31 @@ public class ServerThread implements Runnable {
 			}
 		}
 		else if(tokens.length == 2){
+			String response;
 			switch(tokens[0]){
 				case "mkdir":
 					return this.mkdir(tokens[1]);
 				case "delete":
 					return this.delete(tokens[1]);
 				case "get":
-					return this.get(tokens[1]);
+					//read lock on get
+					this.lock.readLock().lock();
+					try{
+						response =  this.get(tokens[1]);
+					}
+					finally {
+						this.lock.readLock().unlock();
+					}
+					return response;
 				case "put":
-					return this.put(tokens[1]);
+					this.lock.writeLock().lock();
+					try{
+						response =  this.put(tokens[1]);
+					}
+					finally{
+						this.lock.writeLock().unlock();
+					}
+					return response;
 				case "cd":
 					return this.cd(tokens[1]);
 				case "terminate":
