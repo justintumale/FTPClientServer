@@ -199,6 +199,7 @@ public class ClientThread extends Thread {
 			///
 		    //open the output stream
 			OutputStream fos = this.socketN.getOutputStream();
+			
 			//create a buffer for the bytes to be sent through the outstream
 			
 			//open the file's input stream
