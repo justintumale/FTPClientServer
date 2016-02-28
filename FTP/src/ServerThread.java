@@ -214,6 +214,16 @@ public class ServerThread implements Runnable {
 				
 				System.out.println("Bytes read from client: " + count);
 				fos.write(buffer,0 , count);
+				
+				//sleep for testing terminate
+	    		try {
+	    			System.out.println("sleeping for 10 sec");
+					Thread.sleep(10000);
+					System.out.println("waking up");
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				}
+	    		
 				//increment the limit count
 				limit += count;
 				//check if we've reached the interval
@@ -304,14 +314,13 @@ public class ServerThread implements Runnable {
 	    		fileOut.write(buffer, 0, count + HEADER_OFFSET);
 	    		
 	    		//sleep for testing terminate
-	    		/*try {
+	    		try {
 	    			System.out.println("sleeping for 10 sec");
 					Thread.sleep(10000);
 					System.out.println("waking up");
 				} catch (InterruptedException e) {
-					// TODO Auto-generated catch block
 					e.printStackTrace();
-				}*/
+				}
 	    		
 	    		//if cmd is terminated, notify client via headerInvalid then close stream
 	    		if(!keepActive) {
