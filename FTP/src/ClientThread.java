@@ -126,7 +126,7 @@ public class ClientThread extends Thread {
 	private void receiveGet() throws IOException{
 		//read in a line it will tell you command ID
 		String inputCommandId = this.br.readLine();
-		System.out.println(inputCommandId);
+		System.out.println("Command id: " + inputCommandId);
 		
 		//read in another line, it will tell you if file exists or not
 		//if file exists read it, otherwise end thread
@@ -226,12 +226,7 @@ public class ClientThread extends Thread {
 	}
 	
 	private void receivePut() throws IOException{
-		//read in a line it will tell you command ID
 				String input = null;
-			
-		//read in another line saying if writing was successful or not
-		//input = this.br.readLine();
-		//System.out.println("Message from the server: " + input);	
 			System.out.println("File sent");
 	}
 	
