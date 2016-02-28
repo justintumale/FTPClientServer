@@ -210,6 +210,8 @@ public class ClientThread extends Thread {
 				fos.write(buffer);
 			}
 			fis.close();
+			fos.flush();
+			this.socketN.shutdownOutput();
 			this.receivePut();
 			///
 			/*

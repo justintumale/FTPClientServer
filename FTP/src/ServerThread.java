@@ -28,6 +28,7 @@ public class ServerThread implements Runnable {
 	private File currentWorkingDir;
 	private PrintWriter out;
 	private BufferedReader br;
+	private InputStream in;
 	private volatile HashMap<String, Boolean> commandIds;
 	private String commandId = null;
 	private final int TERMINATE_INTERVAL = 1000;
@@ -45,6 +46,7 @@ public class ServerThread implements Runnable {
 			this.out = new PrintWriter(clientSocket.getOutputStream(), true);
 			//br is the incoming message buffer from the client to be read by the server
 			this.br = new BufferedReader(new InputStreamReader(this.clientSocket.getInputStream()));
+			this.in = this.clientSocket.getInputStream();
 		} catch (IOException e) {
 		    e.printStackTrace();
 			System.out.println("Error connecting to socket.");
@@ -180,20 +182,13 @@ public class ServerThread implements Runnable {
 		);
 		this.out.flush();
 		
-	    InputStream in = null;
-		try {
-			in = this.clientSocket.getInputStream();
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		}
-		
 		//////////////
-		int count, limit = 0;
+		int count = -1, limit = 0;
 		//File f = new File(this.currentWorkingDir, fileName);
-		FileOutputStream fos;
+	
 		boolean keepActive = true;
 		try {
-			fos = new FileOutputStream(fileName);
+			FileOutputStream fos = new FileOutputStream(fileName);
 			//receive the bytes from the client
 			while ((count = in.read(buffer)) > 0){
 				//write the bytes to a buffer
@@ -212,12 +207,14 @@ public class ServerThread implements Runnable {
 	    			//partial file from the directory
 					if (!keepActive){
 						System.out.println("Thread received terminate command. put process killed.");
+						fos.flush();
 						fos.close();
 						this.delete(fileName);
 						return "Received terminate command, file: " + fileName + " download stopped and deleted from server.";
 					}
 				}
 			}
+			fos.flush();
 			fos.close();
 			
 		} catch (FileNotFoundException e) {
