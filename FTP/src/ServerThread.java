@@ -208,8 +208,10 @@ public class ServerThread implements Runnable {
 		try {
 			FileOutputStream fos = new FileOutputStream(fileName);
 			//receive the bytes from the client
+			int packetCount = 0;
 			while ((count = in.read(buffer, 0, BUF_SIZE)) > 0){
 				//write the bytes to a buffer
+				packetCount++;
 				System.out.println("byte count" + count);
 				fos.write(buffer);
 				//increment the limit count
@@ -233,6 +235,7 @@ public class ServerThread implements Runnable {
 					}
 				}
 			}
+			System.out.println("Packet count" + packetCount);
 			fos.flush();
 			fos.close();
 			
