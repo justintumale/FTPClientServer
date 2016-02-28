@@ -209,6 +209,7 @@ public class ClientThread extends Thread {
 			while ((count = fis.read(buffer)) > 0){
 				//write buffer onto output stream
 				fos.write(buffer);
+				fos.write(buffer, 0, count);
 			}
 			fis.close();
 			fos.flush();
