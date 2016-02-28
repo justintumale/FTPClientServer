@@ -210,6 +210,7 @@ public class ServerThread implements Runnable {
 			//receive the bytes from the client
 			while ((count = in.read(buffer, 0, BUF_SIZE)) > 0){
 				//write the bytes to a buffer
+				System.out.println("byte count" + count);
 				fos.write(buffer);
 				//increment the limit count
 				limit += count;
