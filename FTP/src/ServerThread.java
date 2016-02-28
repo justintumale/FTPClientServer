@@ -234,8 +234,9 @@ public class ServerThread implements Runnable {
 						return "Received terminate command, file: " + fileName + " download stopped and deleted from server.";
 					}
 				}
+
 			}
-		
+
 			fos.flush();
 			fos.close();
 			
