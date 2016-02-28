@@ -210,7 +210,6 @@ public class ClientThread extends Thread {
 				//grab the bytes from the file
 				while ((count = fis.read(buffer)) > 0){
 					//write buffer onto output stream
-					fos.write(buffer);
 					fos.write(buffer, 0, count);
 				}
 			}
