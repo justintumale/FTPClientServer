@@ -203,7 +203,7 @@ public class ClientThread extends Thread {
 			
 			//open the file's input stream
 			FileInputStream fis = new FileInputStream(file);
-			int count = 0;
+			int count = -1;
 			//grab the bytes from the file
 			while ((count = fis.read(buffer)) > 0){
 				//write buffer onto output stream
