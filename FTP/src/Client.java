@@ -96,8 +96,8 @@ public class Client {
 	}
 	
 	
-	
 	public static void main(String[] args){
+			/*main for testing*/
 		boolean DEVELOPMENT = true;
 		if(DEVELOPMENT){
 			Client client = new Client("localhost", 60000, 60001);
@@ -124,6 +124,7 @@ public class Client {
 		else{
 		
 			try{
+				//checks if port numbers are between specific values, if not, error
 				if(args.length == 3 && Integer.valueOf(args[1]) <= 65535 && Integer.valueOf(args[2]) <= 65535){
 					Client client = new Client(args[0], Integer.valueOf(args[1]), Integer.valueOf(args[2]));
 					System.out.println("Running client!");
@@ -134,11 +135,12 @@ public class Client {
 					throw new NumberFormatException();
 				}
 			}
+			//
 			catch(ConnectException ce){
 				System.out.println("Connection to server refused.");
 			}
 			catch (UnknownHostException e) {
-				System.out.println("Count not find host");
+				System.out.println("Couldn't not find host");
 			}
 			catch(NumberFormatException nfe){
 				System.out.println("Client must be run with this syntax: java Client hostname nport tport" + 
