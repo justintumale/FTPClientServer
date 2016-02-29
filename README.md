@@ -16,5 +16,5 @@ Clean instructions
 Note:
 - check documentation in source code for additional information
 
-“This project was done in its entirety by <Montana Wong, Justin Tumale, Matthew Haneburger> with work load distributions of 40%, 40%, and 20% to MW, JT, and MH respectively. We hereby
+“This project was done in its entirety by Montana Wong, Justin Tumale, Matthew Haneburger with work load distributions of 40%, 40%, and 20% to MW, JT, and MH respectively. We hereby
 state that we have not received unauthorized help of any form”. 
