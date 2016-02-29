@@ -131,7 +131,7 @@ public class ClientThread extends Thread {
 	}
 	/**
 	 * 
-	 * 
+	 * Receives command for get and handles the request
 	 * @throws IOException
 	*/
 	private void receiveGet() throws IOException{
@@ -185,7 +185,12 @@ public class ClientThread extends Thread {
 		}
 	}
 	
-	
+	/**
+	 * 
+	 * sends information for put command. splits command and checks for correct formatting.
+	 * Gives user a command id to terminate the file being 'put'
+	 * @throws IOException
+	*/
 	private void sendPut() throws IOException{
 		String[] tokens = this.cmd.split(" ");
 		if (tokens.length != 2){
@@ -237,12 +242,20 @@ public class ClientThread extends Thread {
 			this.receivePut();
 		}
 	}
-	
+	/**
+	 * 
+	 * Receives command for put and handles the request
+	 * @throws IOException
+	*/
 	private void receivePut() throws IOException{
 				String input = null;
 			System.out.println("File sent");
 	}
-	
+	/**
+	 * 
+	 * Sends command for anything else (any commands that aren't get and put)
+	 * @throws IOException
+	*/
 	private void sendElse() throws IOException{
 		//send command
 		PrintWriter out = null;
@@ -252,12 +265,21 @@ public class ClientThread extends Thread {
 	    out.flush();
 	    this.receiveElse();
 	}
-	
+	/**
+	 * 
+	 * Receives command for anything else, other than get and put
+	 * @throws IOException
+	*/
 	private void receiveElse() throws IOException{
 			this.printResponse();
 		
 	}
-	
+	/**
+	 * 
+	 * Sends a request to terminate the get or put when the file size is substantially large
+	 * Checks for formatting of the terminate command. Always a unique six-digit number.
+	 * @throws IOException
+	*/
 	private void sendTerminate() throws IOException{
 	    String[] tokens = this.cmd.split(" ");
 	    if (tokens.length != 2){
@@ -309,6 +331,11 @@ public class ClientThread extends Thread {
 				System.out.println(input);
 		}
 	}
+	/**
+	 * 
+	 * Flag to show that a file is deleted. Checks to see if file is in existence
+	 * and if so, deletes files. Returns true is file is successfully gone.
+	*/
 	private boolean delete(String filename){
 		File file = new File(filename);
 		if (file.exists()){
