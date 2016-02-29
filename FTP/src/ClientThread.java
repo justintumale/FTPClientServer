@@ -163,8 +163,11 @@ public class ClientThread extends Thread {
 						}
 						else if(Arrays.equals(serverHeader, INVALID )){
 							//we know that the file has been terminated. clean up.
-							//delete file
 							postFileResponse = "File transfer terminated";
+							//delete file on client
+							if(this.delete(fileName)){
+								postFileResponse += " and cleaned up";
+							}
 							break;
 						}
 						else{
@@ -292,11 +295,8 @@ public class ClientThread extends Thread {
 		
 		input = this.br.readLine();
 		response.append(input);
-	
 		return (response.toString().equals("Accept")) ? true : false;  
-
     }
-
 
 	/**
 	 * Prints response by user
@@ -309,6 +309,11 @@ public class ClientThread extends Thread {
 				System.out.println(input);
 		}
 	}
-	
-	
+	private boolean delete(String filename){
+		File file = new File(filename);
+		if (file.exists()){
+			file.delete();
+		}
+		return !file.exists()
+	}
 }
