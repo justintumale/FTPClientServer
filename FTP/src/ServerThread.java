@@ -38,7 +38,10 @@ public class ServerThread implements Runnable {
 	private final byte[] VALID = new byte[]{1,1,1}, INVALID = new byte[]{0,0,0};
 	private final ReentrantReadWriteLock lock = Server.lock;
 	
-	
+	/**
+     * @param client socket, server socket, and hashmap that contains the IDs to terminate processes get and put
+     * @return error connecting if server is already running or initializes client socket, hashmap for IDs, and current directoryy
+     * */
 	public ServerThread(Socket clientSocket, ServerSocket serverSocket, HashMap<String, Boolean> commandIds){
 		this.clientSocket = clientSocket;
 		this.currentWorkingDir = new File(System.getProperty("user.dir"));
@@ -68,6 +71,7 @@ public class ServerThread implements Runnable {
 		System.out.println("Running thread!");
 		
 		try {
+			//checks commands inputted by user and parses it
 			String command = "";
 			String response = "";
 			while((command = this.br.readLine()) != null){
@@ -158,12 +162,16 @@ public class ServerThread implements Runnable {
 		}
 		return "Command not supported.";
 	}
-
+/**
+     * method to terminate get and put when file size is abnormally large (multiple thousands of bytes)
+     * @param command id of process (get and put) to terminate
+     * @return success or failure message
+     * */
     private String terminate(String commandId){
     	Boolean b;
     	synchronized (this.commandIds){
 	    		b = this.commandIds.get(commandId);
-	    	
+	    	//catches if the terminate ID does not exist
 	    	if (b == null){
 	    		return "Command ID not found";
 	    	}
@@ -178,10 +186,7 @@ public class ServerThread implements Runnable {
     	}
     	
     }
-    
-    
-    //TODO add flag check to this method
-	/**
+    /**
      * method of file transfer
      * @param name of file to remote machine from local machine
      * @return success or failure message
@@ -251,7 +256,7 @@ public class ServerThread implements Runnable {
 
 			fos.flush();
 			fos.close();
-			
+		//catches exceptions with files and prints out standard error	
 		} catch (FileNotFoundException e) {
 			e.printStackTrace();
 			return "Error on server";
@@ -345,7 +350,7 @@ public class ServerThread implements Runnable {
 	    	return null;//"Download successful.";
 		
 	    }
-	    
+	    //catches input/output exception
 	    catch(IOException e){
 		    this.notifyClient(false);
 		    return "Error reading file";
@@ -443,7 +448,11 @@ public class ServerThread implements Runnable {
 		}
 		return "File not deleted. File does not exist!";	
 	}
-	
+	/**
+     * method to generate a 6-digit ID for the commands get and put
+     * @param none
+     * @return 6-digit ID between 100000 and 999999
+     * */
 	private String generateId(){
 		//max 6 digit number
 		int max = 999999;
