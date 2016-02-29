@@ -2,7 +2,7 @@
  * @author Montana Wong
  * @author Justin Tumale
  * @author Matthew Haneburger
- * @description: Listens to Server
+ * @description: Acts as a Server dispatcher and spawns workers when a connection is detected at the given port.
  * */
 import java.io.IOException;
 import java.net.ServerSocket;
