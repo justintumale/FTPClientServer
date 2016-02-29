@@ -135,7 +135,7 @@ public class Client {
 					throw new NumberFormatException();
 				}
 			}
-			//
+			//returns an appropriate error with regards to malformatting.
 			catch(ConnectException ce){
 				System.out.println("Connection to server refused.");
 			}
