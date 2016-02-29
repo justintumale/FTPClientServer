@@ -314,6 +314,6 @@ public class ClientThread extends Thread {
 		if (file.exists()){
 			file.delete();
 		}
-		return !file.exists()
+		return !file.exists();
 	}
 }
