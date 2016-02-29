@@ -1,4 +1,3 @@
-
 /**
  * ClientThread.java
  * @author Montana Wong
@@ -26,7 +25,7 @@ import java.util.HashMap;
 /**
  * Creates ClientThread inherited from Java.lang.Thread 
  * Represents one connection
- *
+ * Contains (new) socket for termination of processes get and put
  */
 public class ClientThread extends Thread {
 	
@@ -70,7 +69,6 @@ public class ClientThread extends Thread {
 	 * overridden method run to send and receive signals and catches exceptions with reading files and 
 	 * handling sockets
 	 */
-	//TODO first.
 	@Override
 	public void run(){
 		
@@ -90,7 +88,12 @@ public class ClientThread extends Thread {
 
 
 	}
-	
+		/**
+		 * Parses command given by client and tokenizes the command then
+		 * calls the correct method accordingly
+		 * 
+	 * @throws IOException
+	 */
 	private void parse() throws IOException{
 		String[] tokens = this.cmd.split(" ");	
 		if (tokens[0].equals("get")){
@@ -98,7 +101,6 @@ public class ClientThread extends Thread {
 		}
 		else if (tokens[0].equals("put")){
 			this.sendPut();
-		
 		}
 		else if (tokens[0].equals("terminate")){
 			this.sendTerminate();
@@ -110,7 +112,12 @@ public class ClientThread extends Thread {
 			this.sendElse();
 		}
 	}	
-	
+		/**
+		 * 
+		 * sends command to the Nsocket then sends the command to the server, afterwards making
+		 * a call to receiveGet()
+	 * @throws IOException
+	 */
 	private void sendGet() throws IOException{
 		//send command on Nsocket
 	    PrintWriter out = null;
@@ -122,7 +129,11 @@ public class ClientThread extends Thread {
 	
 		this.receiveGet();
 	}
-	
+	/**
+	 * 
+	 * 
+	 * @throws IOException
+	*/
 	private void receiveGet() throws IOException{
 		//read in a line it will tell you command ID
 		String inputCommandId = this.br.readLine();
