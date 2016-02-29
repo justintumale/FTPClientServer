@@ -1,3 +1,10 @@
+/**
+ * Server.java
+ * @author Montana Wong
+ * @author Justin Tumale
+ * @author Matthew Haneburger
+ * @description Server to handle all the client connections, also handles values of hashmap for termination IDs
+ * */
 import java.util.HashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -17,18 +24,24 @@ public class Server {
 	private ServerListener listenerN = null;
 	private volatile HashMap<String, Boolean> commandIds;
 	public static final ReentrantReadWriteLock lock = new ReentrantReadWriteLock(true);
-	
+	/**
+	 * Server initialization
+	 *@params address, nPort, and tPort
+	*/
 	public Server(String address, int nPort, int tPort){
 		this.address = address;
 		this.nPort = nPort;
 		this.tPort = tPort;
 	}
-	
+	/**
+	 * Overloaded Constructor for server initialization
+	 * @params nPort, tPort
+	*/
 	public Server(int nPort, int tPort){
 		this.nPort = nPort;
 		this.tPort = tPort;
 	}
-	
+	//Automatically called when server is initialized and the connection is successful.
 	public void run(){
 		System.out.println("Server is running");
 		this.commandIds = new HashMap<>();
