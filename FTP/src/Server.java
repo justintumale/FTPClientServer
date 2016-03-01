@@ -105,7 +105,7 @@ public class Server {
 	
 	public static void main(String[] args){
 		
-		boolean DEVELOPMENT = true;
+		boolean DEVELOPMENT = false;
 		if (DEVELOPMENT){
 			Server myFtpServer = new Server("localhost", 60000, 60001);
 			myFtpServer.run();
